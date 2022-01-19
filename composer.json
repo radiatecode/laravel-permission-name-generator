@@ -1,0 +1,37 @@
+{
+    "name": "radiatecode/laravel-route-permission",
+    "description": "Laravel package to handle route permission using middleware",
+    "type": "library",
+    "authors": [
+        {
+            "name": "radiatecode",
+            "email": "radiate126@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.1|^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.18",
+        "phpunit/phpunit": "^9.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "RadiateCode\\LaravelRoutePermission\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RadiateCode\\LaravelRoutePermission\\tests\\" : "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}
