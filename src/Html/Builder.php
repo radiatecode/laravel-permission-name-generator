@@ -4,67 +4,36 @@
 namespace RadiateCode\LaravelRoutePermission\Html;
 
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\HtmlString;
 use RadiateCode\LaravelRoutePermission\PermissibleRoutes;
 
 class Builder
 {
-    protected function li(string $route,string $routeTitle): string
+    public static function permissionButtons(): HtmlString
     {
-        return '<li><input class="form-check-input" type="checkbox" name="role_access[]" value="'.$route.'" id="'.$route.'">'
-            .'<label class="form-check-label" for="'.$route.'">'.$routeTitle.'</label></li>';
-    }
+        $permissionButtons = config('route-permission.permission-buttons');
 
-    protected function card(string $id,string $title,string $listTags): string
-    {
-        $size = config('route-permission.card-size-class');
-
-        return '<div class="'.$size.'">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">'.$title.'</div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="nested-checkbox">
-                            <ul>
-                                <li>
-                                    <input class="form-check-input" type="checkbox" id="'.$id.'">
-                                    <label class="form-check-label" for="'.$id.'">'.$title.'</label>
-                                    <ul>
-                                    '.$listTags.'
-                                    </ul>
-                                </li>
-                            </ul>
+        $html = '<div class="col-md-12 col-lg-12 col-sm-12">
+                    <div class="card">
+                        <div class="card-footer">
+                            <div class="permission-buttons" style="float: right !important">
+                            '.(implode(' ',$permissionButtons)).'
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>';
+                </div>';
+
+        return new HtmlString($html);
     }
 
-    public function permissionCards(): string
+    public static function permissionCards(): string
     {
-        $cards = '';
+        return View::make('route-permission::permission', ['routes' => PermissibleRoutes::getRoutes()])->render();
+    }
 
-        $routeNameSplitter = config('route-permission.route-name-splitter');
-
-        $routes = PermissibleRoutes::getRoutes();
-
-        foreach ($routes as $key => $values){
-            $permissionTitle = ucwords(str_replace('-',' ',$key));
-
-            $liTags = '';
-
-            foreach ($values as $route){
-                $routeTitle = ucwords(str_replace($routeNameSplitter,' ',$route));
-
-                $liTags .= $this->li($route,$routeTitle);
-            }
-
-            $cards .= $this->card($key,$permissionTitle,$liTags);
-        }
-
-        return new HtmlString($cards);
+    public static function permissionScripts(): string
+    {
+        return View::make('route-permission::scripts')->render();
     }
 }

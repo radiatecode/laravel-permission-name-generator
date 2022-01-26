@@ -14,6 +14,8 @@ class PermissionServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'route-permission');
+
         $this->publishes([
             __DIR__
             .'/../config/route-permission.php' => config_path('route-permission.php'),
