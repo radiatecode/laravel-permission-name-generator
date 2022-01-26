@@ -19,19 +19,4 @@ return [
      * nt: Permissible card only works on bootstrap
      */
     'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
-
-    /*
-    |--------------------------------------------------------------------------
-    | User Guards
-    |--------------------------------------------------------------------------
-    |
-    | Define guards for the User resolver.
-    |
-    */
-    'user' => [
-        'guards'       => [
-            'web',
-            'api',
-        ],
-    ],
 ];
