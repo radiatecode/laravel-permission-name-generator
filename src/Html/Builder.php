@@ -17,7 +17,7 @@ class Builder
 
     protected function card(string $id,string $title,string $listTags): string
     {
-        $size = config('laravel-route-permission.card-size-class');
+        $size = config('route-permission.card-size-class');
 
         return '<div class="'.$size.'">
             <div class="card">
@@ -47,7 +47,7 @@ class Builder
     {
         $cards = '';
 
-        $routeNameSplitter = config('laravel-route-permission.route-name-splitter');
+        $routeNameSplitter = config('route-permission.route-name-splitter');
 
         $routes = PermissibleRoutes::getRoutes();
 

@@ -28,30 +28,50 @@ class PermissibleRoutes
             if (Str::contains($namespace, self::ALLOWABLE_NAMESPACE)) {
                 $actionName = $route->getActionName();
 
-                $controllerExtract = explode('@', $actionName)[0];
+                $actionExtract = explode('@', $actionName);
+
+                $controllerExtract = $actionExtract[0];
 
                 if ($controllerExtract == 'Closure') {
                     continue;
                 }
 
-                $controller = '\\' . $controllerExtract;
+                $controllerMethod = $actionExtract[1];
+
+                $controller = '\\'.$controllerExtract;
 
                 $controllerInstance = app($controller);
 
                 if ($controllerInstance instanceof WithPermissible) {
                     $title = $controllerInstance->getPermissionTitle();
 
-                    $excludes = $controllerInstance->getExcludeRoutes();
+                    // if no title defined then generate title from controller name
+                    if (empty($title)) {
+                        $controllerName = class_basename($controllerExtract);
+
+                        if (Str::contains($controllerName, 'Controller')) {
+                            $title = str_replace('Controller', ' Permission',
+                                $controllerName);
+                        }
+                    }
+
+                    $excludeRoutes = $controllerInstance->getExcludeRoutes();
+
+                    $excludeMethods = $controllerInstance->getExcludeMethods();
 
                     $key = strtolower(Str::slug($title, "-"));
 
-                    if (in_array($route->getName(),$excludes) || in_array($route->getName(),$current)){
+                    if (in_array($route->getName(), $excludeRoutes)
+                        || in_array($controllerMethod, $excludeMethods)
+                        || in_array($route->getName(), $current)
+                    ) {
                         continue;
                     }
 
                     $permissibleRoutes[$key][] = $route->getName();
 
-                    $current = $permissibleRoutes[$key]; // avoid duplicate route entry
+                    $current
+                        = $permissibleRoutes[$key]; // avoid duplicate route entry
                 }
             }
         }

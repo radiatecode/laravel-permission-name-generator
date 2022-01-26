@@ -6,9 +6,11 @@ namespace RadiateCode\LaravelRoutePermission\Traits;
 
 trait Permissible
 {
-    private $title;
+    private $title = '';
 
     private $excludeRoutes = [];
+
+    private $excludeMethods = [];
 
     protected function permissibleTitle(string $title){
         $this->title = $title;
@@ -16,18 +18,29 @@ trait Permissible
         return $this;
     }
 
-    public function getPermissibleGroup(): string{
-        return $this->title;
-    }
-
-    protected function permissionExcludeOn(...$routes){
+    protected function permissionExcludeRoutes(...$routes){
         $this->excludeRoutes = $routes;
 
         return $this;
     }
 
+    protected function permissionExcludeMethods(...$methods){
+        $this->excludeMethods = $methods;
+
+        return $this;
+    }
+
+    public function getPermissionTitle(): string{
+        return $this->title;
+    }
+
     public function getExcludeRoutes(): array
     {
         return $this->excludeRoutes;
+    }
+
+    public function getExcludeMethods(): array
+    {
+        return $this->excludeMethods;
     }
 }

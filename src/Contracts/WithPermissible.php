@@ -9,4 +9,6 @@ interface WithPermissible
     public function getPermissionTitle(): string;
 
     public function getExcludeRoutes(): array;
+
+    public function getExcludeMethods(): array;
 }
