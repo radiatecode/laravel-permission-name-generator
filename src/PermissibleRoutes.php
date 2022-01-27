@@ -4,6 +4,7 @@
 namespace RadiateCode\LaravelRoutePermission;
 
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -66,9 +67,11 @@ class PermissibleRoutes
 
             $excludeMethods = $controllerInstance->getExcludeMethods();
 
+            $currentRoutes = Arr::pluck($current,'route');
+
             if (in_array($route->getName(), $excludeRoutes)
                 || in_array($controllerMethod, $excludeMethods)
-                || in_array($route->getName(), $current)
+                || in_array($route->getName(), $currentRoutes)
             ) {
                 continue;
             }
@@ -77,7 +80,10 @@ class PermissibleRoutes
 
             $key = strtolower(Str::slug($title, "-"));
 
-            $permissibleRoutes[$key][] = $route->getName();
+            $permissibleRoutes[$key][] = [
+                'route' => $route->getName(),
+                'title' => ucwords(str_replace(config('route-permission.route-name-splitter'), ' ', $route->getName()))
+            ];
 
             $current = $permissibleRoutes[$key]; // avoid duplicate route entry
         }

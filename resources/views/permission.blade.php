@@ -15,8 +15,8 @@
                         <ul style="list-style-type: none">
                            @foreach($values as $route)
                                 <li>
-                                    <input type="checkbox" name="role_access[]" value="{{ $route }}" id="{{ $route }}">
-                                    <label class="form-check-label" for="{{ $route }}">{{ ucwords(str_replace(config('route-permission.route-name-splitter'), ' ', $route)) }}</label>
+                                    <input type="checkbox" name="role_access[]" value="{{ $route['route'] }}" id="{{ $route['route'] }}">
+                                    <label class="form-check-label" for="{{ $route['route'] }}">{{ $route['title'] }}</label>
                                 </li>
                             @endforeach
                         </ul>
