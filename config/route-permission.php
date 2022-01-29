@@ -4,9 +4,11 @@
 return [
     /**
      * Allowable controller namespace will be count as permissible routes
+     *
+     * [nt: namespaces could be whole (with classname) or grouped namespaces]
      */
     'allowable-controller-namespace' => [
-        'App\Http\Controllers',
+        'App\Http\Controllers', // allow all the controller classes which grouped by this namespace
     ],
 
     /**
@@ -18,7 +20,7 @@ return [
      * Routes which are not count as permissible routes
      */
     'exclude-routes' => [
-        //
+        // route.name
     ],
 
     /**

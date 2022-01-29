@@ -28,14 +28,15 @@ class PermissibleRoutes
             return $cacheRoutes;
         }
 
-        $globalExcludeRoutes = config('route-permission.exclude-routes');
+        $configExcludeRoutes = config('route-permission.exclude-routes');
 
         $permissibleRoutes = [];
 
-        $current = [];
+        $tempRoutes = [];
 
         foreach ($routes as $route) {
-            if (in_array($route->getName(), $globalExcludeRoutes)) {
+            // exclude routes which defined in the config
+            if (in_array($route->getName(), $configExcludeRoutes)) {
                 continue;
             }
 
@@ -57,26 +58,27 @@ class PermissibleRoutes
 
             $controllerInstance = app($controller);
 
-            if ( ! $controllerInstance instanceof WithPermissible) {
+            // if the controller use the WithPermissible interface then find the excluded routes
+            if ($controllerInstance instanceof WithPermissible) {
+                $controllerMethod = $actionExtract[1];
+
+                $excludeRoutes = $controllerInstance->getExcludeRoutes();
+
+                $excludeMethods = $controllerInstance->getExcludeMethods();
+
+                if (in_array($route->getName(), $excludeRoutes) || in_array($controllerMethod, $excludeMethods)) {
+                    continue;
+                }
+            }
+
+            $tempPluckRoutes = Arr::pluck($tempRoutes,'route');
+
+            // check is the current route store in temp routes in order to avoid duplicate
+            if (in_array($route->getName(), $tempPluckRoutes)) {
                 continue;
             }
 
-            $controllerMethod = $actionExtract[1];
-
-            $excludeRoutes = $controllerInstance->getExcludeRoutes();
-
-            $excludeMethods = $controllerInstance->getExcludeMethods();
-
-            $currentRoutes = Arr::pluck($current,'route');
-
-            if (in_array($route->getName(), $excludeRoutes)
-                || in_array($controllerMethod, $excludeMethods)
-                || in_array($route->getName(), $currentRoutes)
-            ) {
-                continue;
-            }
-
-            $title = self::permissionTitle($controllerInstance);
+            $title = self::generatePermissionTitle($controllerInstance);
 
             $key = strtolower(Str::slug($title, "-"));
 
@@ -85,7 +87,7 @@ class PermissibleRoutes
                 'title' => ucwords(str_replace(config('route-permission.route-name-splitter'), ' ', $route->getName()))
             ];
 
-            $current = $permissibleRoutes[$key]; // avoid duplicate route entry
+            $tempRoutes = $permissibleRoutes[$key];
         }
 
         self::cacheRoutes($routesCount, $permissibleRoutes);
@@ -93,15 +95,18 @@ class PermissibleRoutes
         return $permissibleRoutes;
     }
 
-    protected static function permissionTitle($controllerInstance)
+    protected static function generatePermissionTitle($controllerInstance)
     {
-        $title = $controllerInstance->getPermissionTitle();
+        // if the controller use the WithPermissible interface then get the title
+        if ($controllerInstance instanceof WithPermissible) {
+            $title = $controllerInstance->getPermissionTitle();
 
-        if ( ! empty($title)) {
-            return $title;
+            if (! empty($title)){
+                return $title;
+            }
         }
 
-        // if no title defined then generate title from controller name
+        // Or, generate permission title from controller name
         $controllerName = class_basename($controllerInstance);
 
         // place white space between controller (PascalCase) name
@@ -129,9 +134,7 @@ class PermissibleRoutes
 
     protected static function getCacheRoutes(int $routesCount)
     {
-        if ( ! config('route-permission.cache-routes.cacheable')
-            || ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
-        ) {
+        if ( ! config('route-permission.cache-routes.cacheable') || ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)) {
             return null;
         }
 
