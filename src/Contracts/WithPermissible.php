@@ -16,13 +16,6 @@ interface WithPermissible
     public function getPermissionTitle(): string;
 
     /**
-     * Exclude the routes by route name
-     *
-     * @return array
-     */
-    public function getExcludeRoutes(): array;
-
-    /**
      * Exclude the routes by controller method
      *
      * @return array

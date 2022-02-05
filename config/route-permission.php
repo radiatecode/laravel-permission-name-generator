@@ -3,24 +3,36 @@
 
 return [
     /**
-     * Allowable controller namespace will be count as permissible routes
+     * Generate permissible routes for the allowable controller namespace
      *
-     * [nt: namespaces could be whole (with classname) or grouped namespaces]
+     * [nt: namespaces could be whole controller classname or namespace prefix]
      */
     'allowable-controller-namespace' => [
-        'App\Http\Controllers', // allow all the controller classes which grouped by this namespace
+        'App\Http\Controllers',
     ],
 
     /**
-     * Split route by defined character
+     * Split route name by defined character
      */
     'route-name-splitter' => '.',
 
     /**
-     * Routes which are not count as permissible routes
+     * Exclude routes by route name
      */
     'exclude-routes' => [
         // route.name
+    ],
+
+    /**
+     * Exclude routes by controller
+     *
+     * [nt: Within the allowable controller we can exclude routes by specific controllers]
+     */
+    'exclude-controllers' => [
+        /*
+         * exclude every route which associate with WelcomeController
+         */
+        // WelcomeController::class
     ],
 
     /**
@@ -37,14 +49,15 @@ return [
      * nt: extra button can be added
      */
     'permission-buttons' => [
-        '<button type="button" class="btn btn-success" onclick="checkAll()"><i class="fa fa-check-square"></i> Check All</button>',
+        '<button type="button" class="btn btn-primary" onclick="checkAll()"><i class="fa fa-check-square"></i> Check All</button>',
         '<button type="button" class="btn btn-warning" onclick="uncheckAll()"><i class="fa fa-square"></i> Uncheck All </button>',
+        '<button type="button" class="btn btn-success save-btn" onclick="saveRolePermissions()" title="save role permission"><i class="save-loader fa fa-save"></i> Save </button>',
     ],
 
     /**
      * Permission card size
      *
-     * nt: Permissible card only works on bootstrap
+     * [nt: permissible card only works on bootstrap]
      */
     'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
 ];

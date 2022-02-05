@@ -8,8 +8,6 @@ trait Permissible
 {
     private $title = '';
 
-    private $excludeRoutes = [];
-
     private $excludeMethods = [];
 
     /**
@@ -21,19 +19,6 @@ trait Permissible
      */
     protected function permissibleTitle(string $title){
         $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * Set excluded routes by route name
-     *
-     * @param ...$routes
-     *
-     * @return $this
-     */
-    protected function permissionExcludeRoutes(...$routes){
-        $this->excludeRoutes = $routes;
 
         return $this;
     }
@@ -56,14 +41,6 @@ trait Permissible
      */
     public function getPermissionTitle(): string{
         return $this->title;
-    }
-
-    /**
-     * @return array
-     */
-    public function getExcludeRoutes(): array
-    {
-        return $this->excludeRoutes;
     }
 
     /**

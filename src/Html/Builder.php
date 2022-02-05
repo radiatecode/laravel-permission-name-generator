@@ -10,7 +10,11 @@ use RadiateCode\LaravelRoutePermission\PermissibleRoutes;
 
 class Builder
 {
-    public static function permissionButtons(): HtmlString
+    protected $rolePermissions = [];
+
+    protected $roleName = '';
+
+    public function permissionButtons(): HtmlString
     {
         $permissionButtons = config('route-permission.permission-buttons');
 
@@ -18,7 +22,7 @@ class Builder
                     <div class="card">
                         <div class="card-footer">
                             <div class="permission-buttons" style="float: right !important">
-                            '.(implode(' ',$permissionButtons)).'
+                            '.(implode(' ', $permissionButtons)).'
                             </div>
                         </div>
                     </div>
@@ -27,13 +31,31 @@ class Builder
         return new HtmlString($html);
     }
 
-    public static function permissionCards(): string
+    public function withRolePermissions(string $roleName, array $rolePermissions): Builder
     {
-        return View::make('route-permission::permission', ['routes' => PermissibleRoutes::getRoutes()])->render();
+        $this->rolePermissions = $rolePermissions;
+
+        $this->roleName = $roleName;
+
+        return $this;
     }
 
-    public static function permissionScripts(): string
+    public function permissionView(): string
     {
-        return View::make('route-permission::scripts')->render();
+        $permissionButtons = config('route-permission.permission-buttons');
+
+        return View::make('route-permission::permission',
+            [
+                'routes'            => PermissibleRoutes::getRoutes(),
+                'roleName'   => $this->roleName,
+                'rolePermissions'   => $this->rolePermissions,
+                'permissionButtons' => $permissionButtons,
+            ]
+        )->render();
+    }
+
+    public function permissionScripts($url = null): string
+    {
+        return View::make('route-permission::scripts', ['url' => $url])->render();
     }
 }

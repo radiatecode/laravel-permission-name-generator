@@ -28,7 +28,10 @@ class PermissibleRoutes
             return $cacheRoutes;
         }
 
-        $configExcludeRoutes = config('route-permission.exclude-routes');
+        $globalExcludeControllers
+            = config('route-permission.exclude-controllers');
+
+        $globalExcludedRoutes = config('route-permission.exclude-routes');
 
         $permissibleRoutes = [];
 
@@ -36,7 +39,7 @@ class PermissibleRoutes
 
         foreach ($routes as $route) {
             // exclude routes which defined in the config
-            if (in_array($route->getName(), $configExcludeRoutes)) {
+            if (in_array($route->getName(), $globalExcludedRoutes)) {
                 continue;
             }
 
@@ -46,11 +49,10 @@ class PermissibleRoutes
 
             $controllerExtract = $actionExtract[0];
 
-            if ($controllerExtract == 'Closure') {
-                continue;
-            }
-
-            if ( ! self::isNamespaceAllowable($controllerExtract)) {
+            if ($controllerExtract == 'Closure'
+                || ! self::isNamespaceAllowable($controllerExtract)
+                || in_array($controllerExtract, $globalExcludeControllers)
+            ) {
                 continue;
             }
 
@@ -62,18 +64,16 @@ class PermissibleRoutes
             if ($controllerInstance instanceof WithPermissible) {
                 $controllerMethod = $actionExtract[1];
 
-                $excludeRoutes = $controllerInstance->getExcludeRoutes();
-
                 $excludeMethods = $controllerInstance->getExcludeMethods();
 
-                if (in_array($route->getName(), $excludeRoutes) || in_array($controllerMethod, $excludeMethods)) {
+                if (in_array($controllerMethod, $excludeMethods)) {
                     continue;
                 }
             }
 
-            $tempPluckRoutes = Arr::pluck($tempRoutes,'route');
+            $tempPluckRoutes = Arr::pluck($tempRoutes, 'route');
 
-            // check is the current route store in temp routes in order to avoid duplicate
+            // check is the current route store in temp routes in order to avoid duplicacy
             if (in_array($route->getName(), $tempPluckRoutes)) {
                 continue;
             }
@@ -84,7 +84,8 @@ class PermissibleRoutes
 
             $permissibleRoutes[$key][] = [
                 'route' => $route->getName(),
-                'title' => ucwords(str_replace(config('route-permission.route-name-splitter'), ' ', $route->getName()))
+                'title' => ucwords(str_replace(config('route-permission.route-name-splitter'),
+                    ' ', $route->getName())),
             ];
 
             $tempRoutes = $permissibleRoutes[$key];
@@ -101,7 +102,7 @@ class PermissibleRoutes
         if ($controllerInstance instanceof WithPermissible) {
             $title = $controllerInstance->getPermissionTitle();
 
-            if (! empty($title)){
+            if ( ! empty($title)) {
                 return $title;
             }
         }
@@ -121,7 +122,8 @@ class PermissibleRoutes
 
     protected static function isNamespaceAllowable($namespace): bool
     {
-        $allowableNamespaces = config('route-permission.allowable-controller-namespace');
+        $allowableNamespaces
+            = config('route-permission.allowable-controller-namespace');
 
         foreach ($allowableNamespaces as $allowableNamespace) {
             if (Str::contains($namespace, $allowableNamespace)) {
@@ -134,7 +136,9 @@ class PermissibleRoutes
 
     protected static function getCacheRoutes(int $routesCount)
     {
-        if ( ! config('route-permission.cache-routes.cacheable') || ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)) {
+        if ( ! config('route-permission.cache-routes.cacheable')
+            || ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
+        ) {
             return null;
         }
 
@@ -153,8 +157,10 @@ class PermissibleRoutes
         if (config('route-permission.cache-routes.cacheable')
             && ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
         ) {
-            Cache::put(self::CACHE_ROUTES_COUNT_KEY, $routesCount,now()->addDay());
-            Cache::put(self::CACHE_ROUTES_KEY, $permissibleRoutes,now()->addDay());
+            Cache::put(self::CACHE_ROUTES_COUNT_KEY, $routesCount,
+                now()->addDay());
+            Cache::put(self::CACHE_ROUTES_KEY, $permissibleRoutes,
+                now()->addDay());
         }
     }
 }
