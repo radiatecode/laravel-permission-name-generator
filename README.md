@@ -6,7 +6,7 @@ view dynamically. Whenever new routes registered in **web.php** permission view 
 
 ## Example
 ### Generate permission view
-![Stats](img/example-1.png)
+![Stats](img/permission-view.png)
 
 ```php
 class RoleController extends Controller
@@ -74,6 +74,8 @@ You can get permissible routes And make permission view in order to set role per
 
     RadiateCode\LaravelRoutePermission\PermissibleRoutes::getRoutes
 
+**Output**
+![Stats](img/permissible-routes-output.png)
 
 > Under the hood it gets all the routes which registered in **web.php** and only take those controller routes which are allowable (defined in **config** file). The permissible routes grouped by controller.
 

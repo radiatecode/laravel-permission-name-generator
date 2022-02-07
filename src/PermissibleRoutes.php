@@ -28,8 +28,7 @@ class PermissibleRoutes
             return $cacheRoutes;
         }
 
-        $globalExcludeControllers
-            = config('route-permission.exclude-controllers');
+        $globalExcludeControllers = config('route-permission.exclude-controllers');
 
         $globalExcludedRoutes = config('route-permission.exclude-routes');
 
