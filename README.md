@@ -89,22 +89,22 @@ See the above [example](#example)
 
 - permissionView() : generate bootstrap permissions card based on permissible routes.
 - withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
-- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. the **$url** param used to submit the checked permissions for specific role.
+- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the checked permissions for specific role.
 
 ## Config
 
 Config the **route-permission.php** when necessary.
 
-Allowable controller namespace. Only allowable controller can be count as permissible routes. It could be whole controller classname or prefix of namespace
+Allowable controller namespace. Only allowable controller can be count as permissible routes. It could be whole controller classname or controllers grouping namespace
 
 ```php
 /**
  * Generate permissible routes for the allowable controller namespace
  *
- * [nt: namespaces could be whole controller classname or prefix of namespace]
+ * [nt: namespaces could be whole controller classname or controllers grouping namespace]
  */
 'allowable-controller-namespace' => [
-    'App\Http\Controllers', // prefix
+    'App\Http\Controllers', // prefix or grouping namespace
 ],
 ```
 If route name contains any special char then split the the name by that char. It will use to generate route title. For example if route name is **create.designation** then it's title would be **Create Designation**

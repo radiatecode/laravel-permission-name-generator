@@ -5,7 +5,7 @@ return [
     /**
      * Generate permissible routes for the allowable controller namespace
      *
-     * [nt: namespaces could be whole controller classname or namespace prefix]
+     * [nt: namespaces could be whole controller classname or controllers grouping namespace]
      */
     'allowable-controller-namespace' => [
         'App\Http\Controllers',
