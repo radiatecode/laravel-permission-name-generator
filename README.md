@@ -1,7 +1,7 @@
 # Laravel Route Permission
 
-The package used to generate route permission view / privilege view. Sometimes we create role permissions using middleware, So generating permission view for all routes is difficult task. This package can help to generate permission
-view dynamically. Whenever new routes registered in **routes.php** permission view will be updated dynamically.
+The package used to generate route permission view / privilege view. Sometimes we apply role permissions in routes using middleware, So generating permission view for all routes is difficult task. This package can help to generate permission
+view dynamically. Whenever new routes registered in **web.php** permission view will be updated dynamically.
 
 
 ## Example
@@ -84,25 +84,89 @@ See the above [example](#example)
 
 **Builder methods:**
 
-- permissionView() : it generate bootstrap permissions card based on permissible routes.
-- withRolePermissions($roleName,$rolePermissions) : it is used to checked all the permissions that have access to a particular role.
-- permissionScripts($url = null) : it generate functions for check all and uncheck all buttons. the **$url** param used to submit the checked permissions for specific role.
+- permissionView() : generate bootstrap permissions card based on permissible routes.
+- withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
+- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. the **$url** param used to submit the checked permissions for specific role.
 
 ## Config
 
-In **route-permission.php** config file you can define allowable controller namespace. Only the routes which associate with allowable controller can be count as permissioble routes.
+Config the **route-permission.php** when necessary.
+
+Allowable controller namespace. Only allowable controller can be count as permissible routes. It could be whole controller classname or prefix of namespace
 
 ```php
-    /**
-     * Generate permissible routes for the allowable controller namespace
-     *
-     * [nt: namespaces could be whole controller classname or namespace prefix]
-     */
-    'allowable-controller-namespace' => [
-        'App\Http\Controllers', // prefix
-    ],
+/**
+ * Generate permissible routes for the allowable controller namespace
+ *
+ * [nt: namespaces could be whole controller classname or prefix of namespace]
+ */
+'allowable-controller-namespace' => [
+    'App\Http\Controllers', // prefix
+],
+```
+If route name contains any special char then split the the name by that char. It will use to generate route title. For example if route name is **create.designation** then it's title would be **Create Designation**
+```php
+/**
+ * Split route name by defined character
+ */
+'route-name-splitter' => '.',
+```
+Exclude routes by route name. If we don't want to include any routes as permissible routes then we can exclude those in here.
+```php
+/**
+ * Exclude routes by route name
+ */
+'exclude-routes' => [
+    // route.name
+],
+```
+Exclude routes by controller. If we want to exclude all routes of a controller then we can exclude it here
 
-    .........
+```php
+/**
+ * Exclude routes by controller
+ *
+ * [nt: Within the allowable controller we can exclude routes by specific controllers]
+ */
+'exclude-controllers' => [
+    /**
+     * exclude every route which associate with WelcomeController
+     */
+    // WelcomeController::class
+],
+```
+Caching the permissible routes
+```php
+/**
+ * Cache the permissible routes
+ */
+'cache-routes' => [
+  'cacheable' => true,
+  'cache-driver' => env('CACHE_DRIVER', 'file')
+],
+```
+Buttons generate in the permission view
+```php
+/**
+ * permission button used to checked / unchecked all routes
+ * and save permissions for a particular role
+ *
+ * nt: extra button can be added
+ */
+'permission-buttons' => [
+    '<button type="button" class="btn btn-primary" onclick="checkAll()"><i class="fa fa-check-square"></i> Check All</button>',
+    '<button type="button" class="btn btn-warning" onclick="uncheckAll()"><i class="fa fa-square"></i> Uncheck All </button>',
+    '<button type="button" class="btn btn-success save-btn" onclick="saveRolePermissions()" title="save role permission"><i class="save-loader fa fa-save"></i> Save </button>',
+],
+```
+Permission card size (bootstrap grid)
+```php
+/**
+ * Permission card size
+ *
+ * [nt: permissible card only works on bootstrap]
+ */
+'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
 ```
 
 ## Contributing
