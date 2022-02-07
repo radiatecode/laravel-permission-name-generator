@@ -1,6 +1,6 @@
 # Laravel Route Permission
 
-Sometimes we apply role permissions in routes using middleware, So generating permissions view for routes is a difficult task. This package can help to generate permissible routes,
+Sometimes we apply role permissions in routes using middleware, So generating permissions view for permission protected routes is a difficult task. This package can help to generate permissible routes,
 and generate a permissions / privilege view. Whenever new routes registered in **web.php** permission view will be updated dynamically.
 
 
