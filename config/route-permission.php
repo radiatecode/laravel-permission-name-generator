@@ -3,12 +3,12 @@
 
 return [
     /**
-     * Generate permissible routes for the allowable controller namespace
+     * Permission middlewares
      *
-     * [nt: namespaces could be whole controller classname or controllers grouping namespace]
+     * [NT: Define the middlewares by which we applied permissions]
      */
-    'allowable-controller-namespace' => [
-        'App\Http\Controllers',
+    'permission-middlewares' => [
+        // permission middleware
     ],
 
     /**
@@ -26,7 +26,7 @@ return [
     /**
      * Exclude routes by controller
      *
-     * [nt: Within the allowable controller we can exclude routes by specific controllers]
+     * [NT: We can exclude routes by controllers. All the routes associated with controller will be excluded]
      */
     'exclude-controllers' => [
         /*
@@ -46,7 +46,7 @@ return [
     /**
      * permission button used to checked / unchecked all routes
      *
-     * nt: extra button can be added
+     * [NT: Extra button can be added]
      */
     'permission-buttons' => [
         '<button type="button" class="btn btn-primary" onclick="checkAll()"><i class="fa fa-check-square"></i> Check All</button>',
@@ -57,7 +57,7 @@ return [
     /**
      * Permission card size
      *
-     * [nt: permissible card only works on bootstrap]
+     * [NT: Permissible card only works on bootstrap]
      */
     'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
 ];

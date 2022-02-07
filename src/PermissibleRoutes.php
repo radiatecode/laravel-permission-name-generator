@@ -37,8 +37,10 @@ class PermissibleRoutes
         $tempRoutes = [];
 
         foreach ($routes as $route) {
+            $routeName = $route->getName();
+
             // exclude routes which defined in the config
-            if (in_array($route->getName(), $globalExcludedRoutes)) {
+            if (in_array($routeName, $globalExcludedRoutes)) {
                 continue;
             }
 
@@ -46,18 +48,18 @@ class PermissibleRoutes
 
             $actionExtract = explode('@', $actionName);
 
-            $controllerExtract = $actionExtract[0];
+            $controller = $actionExtract[0];
 
-            if ($controllerExtract == 'Closure'
-                || ! self::isNamespaceAllowable($controllerExtract)
-                || in_array($controllerExtract, $globalExcludeControllers)
+            $routeMiddlewares = $route->gatherMiddleware();
+
+            if ($controller == 'Closure'
+                || ! self::isPermissibleMiddleware($routeMiddlewares)
+                || in_array($controller, $globalExcludeControllers)
             ) {
                 continue;
             }
 
-            $controller = '\\'.$controllerExtract;
-
-            $controllerInstance = app($controller);
+            $controllerInstance = app('\\'.$controller);
 
             // if the controller use the WithPermissible interface then find the excluded routes
             if ($controllerInstance instanceof WithPermissible) {
@@ -73,7 +75,7 @@ class PermissibleRoutes
             $tempPluckRoutes = Arr::pluck($tempRoutes, 'route');
 
             // check is the current route store in temp routes in order to avoid duplicacy
-            if (in_array($route->getName(), $tempPluckRoutes)) {
+            if (in_array($routeName, $tempPluckRoutes)) {
                 continue;
             }
 
@@ -82,9 +84,8 @@ class PermissibleRoutes
             $key = strtolower(Str::slug($title, "-"));
 
             $permissibleRoutes[$key][] = [
-                'route' => $route->getName(),
-                'title' => ucwords(str_replace(config('route-permission.route-name-splitter'),
-                    ' ', $route->getName())),
+                'route' => $routeName,
+                'title' => ucwords(str_replace(config('route-permission.route-name-splitter'), ' ', $routeName)),
             ];
 
             $tempRoutes = $permissibleRoutes[$key];
@@ -119,13 +120,12 @@ class PermissibleRoutes
         return $name.' Permission';
     }
 
-    protected static function isNamespaceAllowable($namespace): bool
+    protected static function isPermissibleMiddleware($middlewares): bool
     {
-        $allowableNamespaces
-            = config('route-permission.allowable-controller-namespace');
+        $permissibleMiddlewares = config('route-permission.permission-middlewares');
 
-        foreach ($allowableNamespaces as $allowableNamespace) {
-            if (Str::contains($namespace, $allowableNamespace)) {
+        foreach ($middlewares as $middleware) {
+            if (in_array($middleware,$permissibleMiddlewares)) {
                 return true;
             }
         }

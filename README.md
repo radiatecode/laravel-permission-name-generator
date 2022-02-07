@@ -70,7 +70,7 @@ class OfficeController extends Controller implements WithPermissible
 
 ## Permissible routes
 
-You can get permissible routes And make permission view in order to set role permissions.
+You can get permissible routes And make your own permissions view in order to set role permissions.
 
     RadiateCode\LaravelRoutePermission\PermissibleRoutes::getRoutes
 
@@ -81,30 +81,29 @@ You can get permissible routes And make permission view in order to set role per
 > Under the hood it gets all the routes which registered in **web.php** and only take those controller routes which are allowable (defined in **config** file). The permissible routes grouped by controller.
 
 ## Permission View Builder Facade
-If you want to use predefined permission view then use **PermissionViewBuilder** facade. 
+If you don't want to make permission view by your own, then you can use predefined permissions view [**PermissionViewBuilder** facade]. 
 
 See the above [example](#example)
 
 **Builder methods:**
 
-- permissionView() : generate bootstrap permissions card based on permissible routes.
+- permissionView() : generate bootstrap permissions card based on permissible routes, and config defined action buttons.
 - withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
-- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the checked permissions for specific role.
+- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the selected permissions for specific role.
 
 ## Config
 
-Config the **route-permission.php** when necessary.
+Config the **config/route-permission.php** file.
 
-Allowable controller namespace. Only allowable controller can be count as permissible routes. It could be whole controller classname or controllers grouping namespace
-
+Define the name of the permission middlewares. The package recognise the route as permissible route by these middlewares.
 ```php
 /**
- * Generate permissible routes for the allowable controller namespace
+ * Permission middlewares
  *
- * [nt: namespaces could be whole controller classname or controllers grouping namespace]
+ * [nt: define the middlewares by which we applied permissions]
  */
-'allowable-controller-namespace' => [
-    'App\Http\Controllers', // prefix or grouping namespace
+'permission-middlewares' => [
+    // 'auth', 'role-permissions'
 ],
 ```
 If route name contains any special char then split the the name by that char. It will use to generate route title. For example if route name is **create.designation** then it's title would be **Create Designation**
@@ -129,7 +128,7 @@ Exclude routes by controller. If we want to exclude all routes of a controller t
 /**
  * Exclude routes by controller
  *
- * [nt: Within the allowable controller we can exclude routes by specific controllers]
+ * [NT: We can exclude routes by controllers. All the routes associated with controller will be excluded]
  */
 'exclude-controllers' => [
     /**
