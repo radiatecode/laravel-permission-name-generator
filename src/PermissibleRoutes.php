@@ -18,6 +18,14 @@ class PermissibleRoutes
 
     public static function getRoutes(): array
     {
+        $permissibleMiddlewares = config('route-permission.permission-middlewares');
+
+        $globalExcludeControllers = config('route-permission.exclude-controllers');
+
+        $globalExcludedRoutes = config('route-permission.exclude-routes');
+
+        $splitter = config('route-permission.route-name-splitter');
+
         $routes = Route::getRoutes();
 
         $routesCount = count($routes);
@@ -27,10 +35,6 @@ class PermissibleRoutes
         if ($cacheRoutes !== null) {
             return $cacheRoutes;
         }
-
-        $globalExcludeControllers = config('route-permission.exclude-controllers');
-
-        $globalExcludedRoutes = config('route-permission.exclude-routes');
 
         $permissibleRoutes = [];
 
@@ -53,7 +57,7 @@ class PermissibleRoutes
             $routeMiddlewares = $route->gatherMiddleware();
 
             if ($controller == 'Closure'
-                || ! self::isPermissibleMiddleware($routeMiddlewares)
+                || ! self::isPermissibleMiddleware($permissibleMiddlewares,$routeMiddlewares)
                 || in_array($controller, $globalExcludeControllers)
             ) {
                 continue;
@@ -85,7 +89,7 @@ class PermissibleRoutes
 
             $permissibleRoutes[$key][] = [
                 'route' => $routeName,
-                'title' => ucwords(str_replace(config('route-permission.route-name-splitter'), ' ', $routeName)),
+                'title' => ucwords(str_replace($splitter, ' ', $routeName)),
             ];
 
             $tempRoutes = $permissibleRoutes[$key];
@@ -120,11 +124,9 @@ class PermissibleRoutes
         return $name.' Permission';
     }
 
-    protected static function isPermissibleMiddleware($middlewares): bool
+    protected static function isPermissibleMiddleware($permissibleMiddlewares,$currentRouteMiddlewares): bool
     {
-        $permissibleMiddlewares = config('route-permission.permission-middlewares');
-
-        foreach ($middlewares as $middleware) {
+        foreach ($currentRouteMiddlewares as $middleware) {
             if (in_array($middleware,$permissibleMiddlewares)) {
                 return true;
             }
