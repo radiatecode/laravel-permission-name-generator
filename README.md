@@ -46,8 +46,8 @@ Publish config file
     php artisan vendor:publish --provider="RadiateCode\LaravelRoutePermission\PermissionServiceProvider" --tag="route-permission-config"
 
 # Usages
-## Permissible trait
-It is used to defined permission title, exclude routes by methods in the controller class. First implement the **WithPermissible**
+## Permissible trait [Optional]
+Controller basis we can define permission title, exclude routes by methods. First implement the **WithPermissible**
 Interface in a controller, then use the **Permissible** trait.
 ```php
 use App\Http\Controllers\Controller;
@@ -66,7 +66,7 @@ class OfficeController extends Controller implements WithPermissible
 }
 ```
 
-> Permissible trait is optional. If no permissible title defined, then this package dynamically generate a title based on controller name, And routes can be excluded in the config file.
+> Permissible trait is optional. Because if no permissible title defined, then this package dynamically generate a title based on controller name, And routes can be excluded in the config file.
 
 ## Permissible routes
 
@@ -78,7 +78,7 @@ You can get permissible routes And make your own permissions view in order to se
 
 ![Stats](img/permissible-routes-output.png)
 
-> Under the hood it gets all the routes which registered in **web.php** and only take those controller routes which are allowable (defined in **config** file). The permissible routes grouped by controller.
+> Under the hood it gets all the routes which registered in **web.php** and only take those controller routes which has permission middleware. The permissible routes grouped by controller.
 
 ## Permission View Builder Facade
 If you don't want to make permission view by your own, then you can use predefined permissions view [**PermissionViewBuilder** facade]. 
