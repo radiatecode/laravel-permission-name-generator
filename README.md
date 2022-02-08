@@ -46,52 +46,7 @@ Publish config file
     php artisan vendor:publish --provider="RadiateCode\LaravelRoutePermission\PermissionServiceProvider" --tag="route-permission-config"
 
 # Usages
-## Permissible trait [Optional]
-Controller basis we can define permission title, exclude routes by methods. First implement the **WithPermissible**
-Interface in a controller, then use the **Permissible** trait.
-```php
-use App\Http\Controllers\Controller;
-use RadiateCode\LaravelRoutePermission\Contracts\WithPermissible;
-use RadiateCode\LaravelRoutePermission\Traits\Permissible;
-
-class OfficeController extends Controller implements WithPermissible
-{
-    use Permissible;
-   
-    public function __construct()
-    {
-         $this->permissibleTitle('Office Crud Permission')
-            ->permissionExcludeMethods('index','listDatatable'); // when necessary exclude specific routes by the controller methods
-    }
-}
-```
-
-> Permissible trait is optional. Because if no permissible title defined, then this package dynamically generate a title based on controller name, And routes can be excluded in the config file.
-
-## Permissible routes
-
-You can get permissible routes And make your own permissions view in order to set role permissions.
-
-    RadiateCode\LaravelRoutePermission\PermissibleRoutes::getRoutes
-
-**Output**
-
-![Stats](img/permissible-routes-output.png)
-
-> Under the hood it gets all the routes which registered in **web.php** and only take those routes which has permission middleware. The permissible routes grouped by controller.
-
-## Permission View Builder Facade
-If you don't want to make permission view by your own, then you can use predefined permissions view [**PermissionViewBuilder** facade]. 
-
-See the above [example](#example)
-
-**Builder methods:**
-
-- permissionView() : generate bootstrap permissions card based on permissible routes, and config defined action buttons.
-- withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
-- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the selected permissions for specific role.
-
-## Config
+## Configuration
 
 Config the **config/route-permission.php** file.
 
@@ -170,6 +125,51 @@ Permission card size (bootstrap grid)
  */
 'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
 ```
+
+## Permissible trait [Optional]
+Controller basis we can define permission title, exclude routes by methods. First implement the **WithPermissible**
+Interface in a controller, then use the **Permissible** trait.
+```php
+use App\Http\Controllers\Controller;
+use RadiateCode\LaravelRoutePermission\Contracts\WithPermissible;
+use RadiateCode\LaravelRoutePermission\Traits\Permissible;
+
+class OfficeController extends Controller implements WithPermissible
+{
+    use Permissible;
+   
+    public function __construct()
+    {
+         $this->permissibleTitle('Office Crud Permission')
+            ->permissionExcludeMethods('index','listDatatable'); // when necessary exclude specific routes by the controller methods
+    }
+}
+```
+
+> Permissible trait is optional. Because if no permissible title defined, then this package dynamically generate a title based on controller name, And routes can be excluded in the config file.
+
+## Permissible routes
+
+You can get permissible routes And make your own permissions view in order to set role permissions.
+
+    RadiateCode\LaravelRoutePermission\PermissibleRoutes::getRoutes
+
+**Output**
+
+![Stats](img/permissible-routes-output.png)
+
+> Under the hood it gets all the routes which registered in **web.php** and only take those routes which has permission middleware. The permissible routes grouped by controller.
+
+## Permission View Builder Facade
+If you don't want to make permission view by your own, then you can use predefined permissions view [**PermissionViewBuilder** facade]. 
+
+See the above [example](#example)
+
+**Builder methods:**
+
+- permissionView() : generate bootstrap permissions card based on permissible routes, and config defined action buttons.
+- withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
+- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the selected permissions for specific role.
 
 ## Contributing
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
