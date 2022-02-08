@@ -16,9 +16,11 @@ class PermissibleRoutes
 
     private const CACHE_ROUTES_KEY = 'routes';
 
+    private static $permissibleMiddlewares = [];
+
     public static function getRoutes(): array
     {
-        $permissibleMiddlewares = config('route-permission.permission-middlewares');
+        self::$permissibleMiddlewares = config('route-permission.permission-middlewares');
 
         $globalExcludeControllers = config('route-permission.exclude-controllers');
 
@@ -57,7 +59,7 @@ class PermissibleRoutes
             $routeMiddlewares = $route->gatherMiddleware();
 
             if ($controller == 'Closure'
-                || ! self::isPermissibleMiddleware($permissibleMiddlewares,$routeMiddlewares)
+                || ! self::isPermissibleMiddleware($routeMiddlewares)
                 || in_array($controller, $globalExcludeControllers)
             ) {
                 continue;
@@ -124,10 +126,10 @@ class PermissibleRoutes
         return $name.' Permission';
     }
 
-    protected static function isPermissibleMiddleware($permissibleMiddlewares,$currentRouteMiddlewares): bool
+    protected static function isPermissibleMiddleware($currentRouteMiddlewares): bool
     {
         foreach ($currentRouteMiddlewares as $middleware) {
-            if (in_array($middleware,$permissibleMiddlewares)) {
+            if (in_array($middleware,self::$permissibleMiddlewares)) {
                 return true;
             }
         }
