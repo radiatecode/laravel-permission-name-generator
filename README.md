@@ -17,7 +17,7 @@ class RoleController extends Controller
 
         return view('app.role.permission')
             ->with('permissions',PermissionViewBuilder::withRolePermissions($role->role_name,json_decode($role->role_access))->permissionView())
-            ->with('permission_scripts',PermissionViewBuilder::permissionScripts(route('preset.role.permissions',$id)));
+            ->with('permission_scripts',PermissionViewBuilder::permissionScripts(route('role.permissions',$id)));
     }
 }
 ```
@@ -30,6 +30,24 @@ class RoleController extends Controller
 ......
 <!-- generate scripts -->
 {!! $permission_scripts !!}
+```
+**Saving permissions for a role:**
+```php
+Route::post('/role/permissions/{id}',[RoleController::class,'permissionStore'])->name('role.permissions');
+```
+```php
+use \Illuminate\Http\Request;
+class RoleController extends Controller
+{
+     public function permissionStore(Request $request,$id)
+    {
+        $role = Role::find($id);
+        $role->role_accesses = json_encode($request->get('permissions')); // get the submitted permissions
+        $role->save();
+
+        return response()->json('success',201);
+    }
+}
 ```
 # Requirements
 - [PHP >= 7.1](https://www.php.net/)
@@ -170,6 +188,11 @@ See the above [example](#example)
 - permissionView() : generate bootstrap permissions card based on permissible routes, and config defined action buttons.
 - withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
 - permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the selected permissions for specific role.
+
+> **Note:** When submit the permissions from predefined view to any post routes you need to get the permissions by 
+> ```php
+>   $request->get('permissions');  // array of permissions
+> ```
 
 ## Contributing
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
