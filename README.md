@@ -78,7 +78,7 @@ You can get permissible routes And make your own permissions view in order to se
 
 ![Stats](img/permissible-routes-output.png)
 
-> Under the hood it gets all the routes which registered in **web.php** and only take those controller routes which has permission middleware. The permissible routes grouped by controller.
+> Under the hood it gets all the routes which registered in **web.php** and only take those routes which has permission middleware. The permissible routes grouped by controller.
 
 ## Permission View Builder Facade
 If you don't want to make permission view by your own, then you can use predefined permissions view [**PermissionViewBuilder** facade]. 
