@@ -34,8 +34,8 @@ class RoleController extends Controller
 # Requirements
 - [PHP >= 7.1](https://www.php.net/)
 - [Laravel 5.7|6.x|7.x|8.x](https://github.com/laravel/framework)
-- [Jquery](https://www.chartjs.org/)
-- [Bootstrap](https://www.chartjs.org/)
+- [JQuery](https://jquery.com/)
+- [Bootstrap](https://getbootstrap.com/)
 # Installation
 You can install the package via composer:
 
@@ -45,7 +45,7 @@ Publish config file
 
     php artisan vendor:publish --provider="RadiateCode\LaravelRoutePermission\PermissionServiceProvider" --tag="route-permission-config"
 
-# Usages
+# Usage
 ## Configuration
 
 Config the **config/route-permission.php** file.
