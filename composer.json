@@ -1,6 +1,12 @@
 {
     "name": "radiatecode/laravel-route-permission",
-    "description": "Laravel package to handle route permission using middleware",
+    "description": "Laravel package to generate permissible routes based on permission middleware",
+    "keywords": [
+        "laravel-route-permission",
+        "laravel-permission-view",
+        "permission-view",
+        "permissible-routes"
+    ],
     "type": "library",
     "authors": [
         {
