@@ -1,15 +1,15 @@
 <?php
 
 
-namespace RadiateCode\LaravelRoutePermission\Contracts;
+namespace RadiateCode\PermissionNameGenerator\Contracts;
 
 
-interface WithPermissible
+interface WithPermissionGenerator
 {
     /**
-     * Permissible title
+     * Permission title
      *
-     * [It used to grouping the routes which are associated with same controller]
+     * [It used to grouping the permissions]
      *
      * @return string
      */

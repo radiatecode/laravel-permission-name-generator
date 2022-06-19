@@ -1,16 +1,16 @@
 <?php
 
 
-namespace RadiateCode\LaravelRoutePermission;
+namespace RadiateCode\PermissionNameGenerator;
 
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
-use RadiateCode\LaravelRoutePermission\Contracts\WithPermissible;
+use RadiateCode\PermissionNameGenerator\Contracts\WithPermissionGenerator;
 
-class PermissibleRoutes
+class Permissions
 {
     private const CACHE_ROUTES_COUNT_KEY = 'routes-count';
 
@@ -18,15 +18,15 @@ class PermissibleRoutes
 
     private static $permissibleMiddlewares = [];
 
-    public static function getRoutes(): array
+    public static function get(): array
     {
-        self::$permissibleMiddlewares = config('route-permission.permission-middlewares');
+        self::$permissibleMiddlewares = config('permissions-generator.permission-middlewares');
 
-        $globalExcludeControllers = config('route-permission.exclude-controllers');
+        $globalExcludeControllers = config('permissions-generator.exclude-controllers');
 
-        $globalExcludedRoutes = config('route-permission.exclude-routes');
+        $globalExcludedRoutes = config('permissions-generator.exclude-routes');
 
-        $splitter = config('route-permission.route-name-splitter');
+        $splitter = config('permissions-generator.route-name-splitter');
 
         $routes = Route::getRoutes();
 
@@ -38,7 +38,7 @@ class PermissibleRoutes
             return $cacheRoutes;
         }
 
-        $permissibleRoutes = [];
+        $permissions = [];
 
         $tempRoutes = [];
 
@@ -68,7 +68,7 @@ class PermissibleRoutes
             $controllerInstance = app('\\'.$controller);
 
             // if the controller use the WithPermissible interface then find the excluded routes
-            if ($controllerInstance instanceof WithPermissible) {
+            if ($controllerInstance instanceof WithPermissionGenerator) {
                 $controllerMethod = $actionExtract[1];
 
                 $excludeMethods = $controllerInstance->getExcludeMethods();
@@ -89,23 +89,23 @@ class PermissibleRoutes
 
             $key = strtolower(Str::slug($title, "-"));
 
-            $permissibleRoutes[$key][] = [
-                'route' => $routeName,
-                'title' => ucwords(str_replace($splitter, ' ', $routeName)),
+            $permissions[$key][] = [
+                'slug' => $routeName,
+                'name' => ucwords(str_replace($splitter, ' ', $routeName)),
             ];
 
-            $tempRoutes = $permissibleRoutes[$key];
+            $tempRoutes = $permissions[$key];
         }
 
-        self::cacheRoutes($routesCount, $permissibleRoutes);
+        self::cacheRoutes($routesCount, $permissions);
 
-        return $permissibleRoutes;
+        return $permissions;
     }
 
     protected static function generatePermissionTitle($controllerInstance)
     {
         // if the controller use the WithPermissible interface then get the title
-        if ($controllerInstance instanceof WithPermissible) {
+        if ($controllerInstance instanceof WithPermissionGenerator) {
             $title = $controllerInstance->getPermissionTitle();
 
             if ( ! empty($title)) {
@@ -139,7 +139,7 @@ class PermissibleRoutes
 
     protected static function getCacheRoutes(int $routesCount)
     {
-        if ( ! config('route-permission.cache-routes.cacheable')
+        if ( ! config('permissions-generator.cache-routes.cacheable')
             || ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
         ) {
             return null;
@@ -157,7 +157,7 @@ class PermissibleRoutes
 
     protected static function cacheRoutes(int $routesCount, $permissibleRoutes)
     {
-        if (config('route-permission.cache-routes.cacheable')
+        if (config('permissions-generator.cache-routes.cacheable')
             && ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
         ) {
             Cache::put(self::CACHE_ROUTES_COUNT_KEY, $routesCount,

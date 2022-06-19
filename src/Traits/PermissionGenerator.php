@@ -1,10 +1,10 @@
 <?php
 
 
-namespace RadiateCode\LaravelRoutePermission\Traits;
+namespace RadiateCode\PermissionNameGenerator\Traits;
 
 
-trait Permissible
+trait PermissionGenerator
 {
     private $title = '';
 

@@ -5,7 +5,7 @@ return [
     /**
      * Permission middlewares
      *
-     * [NT: Define the middlewares by which we applied permissions]
+     * [NT: Which middleware routes need to be count as permission]
      */
     'permission-middlewares' => [
         // permission middleware
@@ -41,17 +41,6 @@ return [
     'cache-routes' => [
       'cacheable' => true,
       'cache-driver' => env('CACHE_DRIVER', 'file')
-    ],
-
-    /**
-     * permission button used to checked / unchecked all routes
-     *
-     * [NT: Extra button can be added]
-     */
-    'permission-buttons' => [
-        '<button type="button" class="btn btn-primary" onclick="checkAll()"><i class="fa fa-check-square"></i> Check All</button>',
-        '<button type="button" class="btn btn-warning" onclick="uncheckAll()"><i class="fa fa-square"></i> Uncheck All </button>',
-        '<button type="button" class="btn btn-success save-btn" onclick="saveRolePermissions()" title="save role permission"><i class="save-loader fa fa-save"></i> Save </button>',
     ],
 
     /**

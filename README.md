@@ -2,9 +2,9 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/radiatecode/laravel-route-permission.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-route-permission)
 [![Total Downloads](https://img.shields.io/packagist/dt/radiatecode/laravel-route-permission.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-route-permission)
 
-Sometimes we apply role permissions in routes using middleware, So generating permissions view for permission protected routes is a difficult task. This package can help to generate permissible routes,
-and generate a permissions / privilege view. Whenever new routes registered in **web.php** permission view will be updated dynamically.
-
+In role-permission base authorization we generally add permissions to a db table, then assign the permissions to a user or a role. 
+This package will generate permissions from route names, so no need for a permission db table. we can assign these permissions to a user, or a particular role 
+to authorize user actions. There is a pre-built generator to generate role base permission view. 
 
 ## Example
 ### Generate permission view
@@ -18,7 +18,7 @@ class RoleController extends Controller
         $role = Role::find($id);
 
         return view('app.role.permission')
-            ->with('permissions',PermissionViewBuilder::withRolePermissions($role->role_name,json_decode($role->role_access))->permissionView())
+            ->with('permissions',PermissionViewBuilder::withRolePermissions($role->role_name,json_decode($role->role_permissions))->permissionView())
             ->with('permission_scripts',PermissionViewBuilder::permissionScripts(route('role.permissions',$id)));
     }
 }
@@ -149,14 +149,15 @@ Permission card size (bootstrap grid)
 ## Permissible trait [Optional]
 Controller basis we can define permission title, exclude routes by methods. First implement the **WithPermissible**
 Interface in a controller, then use the **Permissible** trait.
+
 ```php
 use App\Http\Controllers\Controller;
-use RadiateCode\LaravelRoutePermission\Contracts\WithPermissible;
-use RadiateCode\LaravelRoutePermission\Traits\Permissible;
+use RadiateCode\LaravelRoutePermission\Contracts\WithPermissionGenerator;
+use RadiateCode\LaravelRoutePermission\Traits\PermissionGenerator;
 
-class OfficeController extends Controller implements WithPermissible
+class OfficeController extends Controller implements WithPermissionGenerator
 {
-    use Permissible;
+    use PermissionGenerator;
    
     public function __construct()
     {

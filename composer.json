@@ -1,11 +1,10 @@
 {
-    "name": "radiatecode/laravel-route-permission",
-    "description": "Laravel package to generate permissible routes based on permission middleware",
+    "name": "radiatecode/laravel-permission-name-generator",
+    "description": "Laravel package to generate permission names from route names",
     "keywords": [
-        "laravel-route-permission",
-        "laravel-permission-view",
-        "permission-view",
-        "permissible-routes"
+        "laravel-permission-name",
+        "laravel-permissions-view",
+        "permission-name-generator"
     ],
     "type": "library",
     "authors": [
@@ -24,12 +23,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "RadiateCode\\LaravelRoutePermission\\": "src/"
+            "RadiateCode\\PermissionNameGenerator\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "RadiateCode\\LaravelRoutePermission\\tests\\" : "tests/"
+            "RadiateCode\\PermissionNameGenerator\\tests\\" : "tests/"
         }
     },
     "scripts": {
@@ -42,7 +41,7 @@
     "extra": {
         "laravel": {
             "providers" : [
-                "RadiateCode\\LaravelRoutePermission\\PermissionServiceProvider"
+                "PermissionNameServiceProvider"
             ]
         }
     },

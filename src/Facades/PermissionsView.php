@@ -1,11 +1,11 @@
 <?php
 
 
-namespace RadiateCode\LaravelRoutePermission\Facades;
+namespace RadiateCode\PermissionNameGenerator\Facades;
 
 
 use Illuminate\Support\Facades\Facade;
-use RadiateCode\LaravelRoutePermission\Html\Builder;
+use RadiateCode\PermissionNameGenerator\Html\Builder;
 
 /**
  * @method static Builder withRolePermissions(string $roleName, array $rolePermissions)
@@ -14,7 +14,7 @@ use RadiateCode\LaravelRoutePermission\Html\Builder;
  *
  * @see Builder
  */
-class PermissionViewBuilder extends Facade
+class PermissionsView extends Facade
 {
     protected static function getFacadeAccessor(){
         return 'permission.view.builder';

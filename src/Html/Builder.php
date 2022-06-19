@@ -1,12 +1,10 @@
 <?php
 
 
-namespace RadiateCode\LaravelRoutePermission\Html;
-
+namespace RadiateCode\PermissionNameGenerator\Html;
 
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\HtmlString;
-use RadiateCode\LaravelRoutePermission\PermissibleRoutes;
+use RadiateCode\PermissionNameGenerator\Permissions;
 
 class Builder
 {
@@ -14,24 +12,7 @@ class Builder
 
     protected $roleName = '';
 
-    public function permissionButtons(): HtmlString
-    {
-        $permissionButtons = config('route-permission.permission-buttons');
-
-        $html = '<div class="col-md-12 col-lg-12 col-sm-12">
-                    <div class="card">
-                        <div class="card-footer">
-                            <div class="permission-buttons" style="float: right !important">
-                            '.(implode(' ', $permissionButtons)).'
-                            </div>
-                        </div>
-                    </div>
-                </div>';
-
-        return new HtmlString($html);
-    }
-
-    public function withRolePermissions(string $roleName, array $rolePermissions): Builder
+    public function rolePermissions(string $roleName, array $rolePermissions): Builder
     {
         $this->rolePermissions = $rolePermissions;
 
@@ -40,22 +21,24 @@ class Builder
         return $this;
     }
 
-    public function permissionView(): string
+    public function view(): string
     {
-        $permissionButtons = config('route-permission.permission-buttons');
-
-        return View::make('route-permission::permission',
+        return View::make('permissions-generator::permission',
             [
-                'routes'            => PermissibleRoutes::getRoutes(),
+                'routes'            => Permissions::get(),
                 'roleName'   => $this->roleName,
-                'rolePermissions'   => $this->rolePermissions,
-                'permissionButtons' => $permissionButtons,
+                'rolePermissions'   => $this->rolePermissions
             ]
         )->render();
     }
 
-    public function permissionScripts($url = null): string
+    /**
+     * @param  null  $url // role permissions save url
+     *
+     * @return string
+     */
+    public function scripts($url = null): string
     {
-        return View::make('route-permission::scripts', ['url' => $url])->render();
+        return View::make('permissions-generator::scripts', ['url' => $url])->render();
     }
 }
