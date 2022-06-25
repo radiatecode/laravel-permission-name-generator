@@ -9,8 +9,9 @@ use RadiateCode\PermissionNameGenerator\Html\Builder;
 
 /**
  * @method static Builder withRolePermissions(string $roleName, array $rolePermissions)
- * @method static string permissionView()
- * @method static string permissionScripts($url = null)
+ * @method static Builder addManualPermission(string $key, array $permissions)
+ * @method static string view()
+ * @method static string scripts($url = null)
  *
  * @see Builder
  */

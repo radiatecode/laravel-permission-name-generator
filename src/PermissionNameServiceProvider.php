@@ -4,6 +4,7 @@ namespace RadiateCode\PermissionNameGenerator;
 
 use Illuminate\Support\ServiceProvider;
 use RadiateCode\PermissionNameGenerator\Html\Builder;
+use RadiateCode\PermissionNameGenerator\Console\PermissionCacheClearCommand;
 
 class PermissionNameServiceProvider extends ServiceProvider
 {
@@ -11,7 +12,7 @@ class PermissionNameServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(
             __DIR__.'/../config/permission-generator.php',
-            'route-permission'
+            'permission-generator'
         );
 
         $this->app->singleton(
@@ -24,15 +25,23 @@ class PermissionNameServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands(
+                [
+                    PermissionCacheClearCommand::class
+                ]
+            );
+        }
+
         $this->loadViewsFrom(
             __DIR__.'/../resources/views',
-            'permissions-generator'
+            'permission-generator'
         );
 
         $this->publishes(
             [
                 __DIR__.'/../resources/views' => resource_path(
-                    'views/vendor/permissions-generator'
+                    'views/vendor/permission-generator'
                 ),
             ]
         );
@@ -41,10 +50,10 @@ class PermissionNameServiceProvider extends ServiceProvider
             [
                 __DIR__
                 .'/../config/permission-generator.php' => config_path(
-                    'permissions-generator.php'
+                    'permission-generator.php'
                 ),
             ],
-            'permissions-generator-config'
+            'permission-generator-config'
         );
     }
 }

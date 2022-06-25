@@ -9,24 +9,34 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use RadiateCode\PermissionNameGenerator\Contracts\WithPermissionGenerator;
+use RadiateCode\PermissionNameGenerator\Enums\Constant;
 
 class Permissions
 {
-    private const CACHE_ROUTES_COUNT_KEY = 'routes-count';
+    private $controllerNamespacePrefixes = [];
 
-    private const CACHE_ROUTES_KEY = 'routes';
+    private $globalExcludeControllers = [];
 
-    private static $permissibleMiddlewares = [];
+    private $manualPermissions = [];
 
-    public static function get(): array
+    public static function make(): Permissions
     {
-        self::$permissibleMiddlewares = config('permissions-generator.permission-middlewares');
+        return new self();
+    }
 
-        $globalExcludeControllers = config('permissions-generator.exclude-controllers');
+    public function get(): array
+    {
+        $this->controllerNamespacePrefixes = config(
+            'permission-generator.controller-namespace-prefixes'
+        );
 
-        $globalExcludedRoutes = config('permissions-generator.exclude-routes');
+        $this->globalExcludeControllers = config(
+            'permission-generator.exclude-controllers'
+        );
 
-        $splitter = config('permissions-generator.route-name-splitter');
+        $globalExcludedRoutes = config('permission-generator.exclude-routes');
+
+        $splitter = config('permission-generator.route-name-splitter-needle');
 
         $routes = Route::getRoutes();
 
@@ -50,20 +60,22 @@ class Permissions
                 continue;
             }
 
+
             $actionName = $route->getActionName();
 
             $actionExtract = explode('@', $actionName);
 
             $controller = $actionExtract[0];
 
-            $routeMiddlewares = $route->gatherMiddleware();
+            // $routeMiddlewares = $route->gatherMiddleware();
 
             if ($controller == 'Closure'
-                || ! self::isPermissibleMiddleware($routeMiddlewares)
-                || in_array($controller, $globalExcludeControllers)
+                || ! $this->isControllerValid($controller)
+                || $this->isExcludedController($controller)
             ) {
                 continue;
             }
+
 
             $controllerInstance = app('\\'.$controller);
 
@@ -78,7 +90,7 @@ class Permissions
                 }
             }
 
-            $tempPluckRoutes = Arr::pluck($tempRoutes, 'route');
+            $tempPluckRoutes = Arr::pluck($tempRoutes, 'slug');
 
             // check is the current route store in temp routes in order to avoid duplicacy
             if (in_array($routeName, $tempPluckRoutes)) {
@@ -97,9 +109,23 @@ class Permissions
             $tempRoutes = $permissions[$key];
         }
 
-        self::cacheRoutes($routesCount, $permissions);
+        // add manual permissions to rendered permissions
+        if ( ! empty($this->manualPermissions)) {
+            foreach ($this->manualPermissions as $key => $permission) {
+                $permissions[$key][] = $permission;
+            }
+        }
+
+        self::cachePermissions($routesCount, $permissions);
 
         return $permissions;
+    }
+
+    public function withManualPermissions(array $permissions): Permissions
+    {
+        $this->manualPermissions = $permissions;
+
+        return $this;
     }
 
     protected static function generatePermissionTitle($controllerInstance)
@@ -126,10 +152,21 @@ class Permissions
         return $name.' Permission';
     }
 
-    protected static function isPermissibleMiddleware($currentRouteMiddlewares): bool
+    protected function isExcludedController($controller): bool
     {
-        foreach ($currentRouteMiddlewares as $middleware) {
-            if (in_array($middleware,self::$permissibleMiddlewares)) {
+        foreach ($this->globalExcludeControllers as $prefix) {
+            if (Str::contains($controller, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isControllerValid($controller): bool
+    {
+        foreach ($this->controllerNamespacePrefixes as $prefix) {
+            if (Str::contains($controller, $prefix)) {
                 return true;
             }
         }
@@ -139,31 +176,38 @@ class Permissions
 
     protected static function getCacheRoutes(int $routesCount)
     {
-        if ( ! config('permissions-generator.cache-routes.cacheable')
-            || ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
+        if ( ! config('permission-generator.cache-permissions.cacheable')
+            || ! Cache::has(Constant::CACHE_ROUTES_COUNT_KEY)
         ) {
             return null;
         }
 
-        if ($routesCount !== Cache::get(self::CACHE_ROUTES_COUNT_KEY)) {
-            Cache::forget(self::CACHE_ROUTES_COUNT_KEY);
-            Cache::forget(self::CACHE_ROUTES_KEY);
+        if ($routesCount !== Cache::get(Constant::CACHE_ROUTES_COUNT_KEY)) {
+            Cache::forget(Constant::CACHE_ROUTES_COUNT_KEY);
+            Cache::forget(Constant::CACHE_PERMISSIONS_KEY);
 
             return null;
         }
 
-        return Cache::get(self::CACHE_ROUTES_KEY);
+        return Cache::get(Constant::CACHE_PERMISSIONS_KEY);
     }
 
-    protected static function cacheRoutes(int $routesCount, $permissibleRoutes)
+    protected static function cachePermissions(int $routesCount, $permissions)
     {
-        if (config('permissions-generator.cache-routes.cacheable')
-            && ! Cache::has(self::CACHE_ROUTES_COUNT_KEY)
+        if (config('permission-generator.cache-permissions.cacheable')
+            && ! Cache::has(Constant::CACHE_ROUTES_COUNT_KEY)
+            && ! empty($permissions)
         ) {
-            Cache::put(self::CACHE_ROUTES_COUNT_KEY, $routesCount,
-                now()->addDay());
-            Cache::put(self::CACHE_ROUTES_KEY, $permissibleRoutes,
-                now()->addDay());
+            Cache::put(
+                Constant::CACHE_ROUTES_COUNT_KEY,
+                $routesCount,
+                now()->addDay()
+            );
+            Cache::put(
+                Constant::CACHE_PERMISSIONS_KEY,
+                $permissions,
+                now()->addDay()
+            );
         }
     }
 }

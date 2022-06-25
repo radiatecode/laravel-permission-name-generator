@@ -11,13 +11,13 @@ trait PermissionGenerator
     private $excludeMethods = [];
 
     /**
-     * Set the permissible title
+     * Set the permission group title
      *
      * @param  string  $title
      *
      * @return $this
      */
-    protected function permissibleTitle(string $title){
+    protected function permissionGroupTitle(string $title){
         $this->title = $title;
 
         return $this;

@@ -2,7 +2,7 @@
     "name": "radiatecode/laravel-permission-name-generator",
     "description": "Laravel package to generate permission names from route names",
     "keywords": [
-        "laravel-permission-name",
+        "laravel-permission-names",
         "laravel-permissions-view",
         "permission-name-generator"
     ],
@@ -24,7 +24,10 @@
     "autoload": {
         "psr-4": {
             "RadiateCode\\PermissionNameGenerator\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -41,7 +44,7 @@
     "extra": {
         "laravel": {
             "providers" : [
-                "PermissionNameServiceProvider"
+                "RadiateCode\\PermissionNameGenerator\\PermissionNameServiceProvider"
             ]
         }
     },

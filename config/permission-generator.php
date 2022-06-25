@@ -3,18 +3,18 @@
 
 return [
     /**
-     * Permission middlewares
+     * Define controller namespace
      *
-     * [NT: Which middleware routes need to be count as permission]
+     * [NT: permissions will be generated from those controller which contains the prefix]
      */
-    'permission-middlewares' => [
-        // permission middleware
+    'controller-namespace-prefixes' => [
+        'App\Http\Controllers',
     ],
 
     /**
-     * Split route name by defined character
+     * Split route name by defined needle
      */
-    'route-name-splitter' => '.',
+    'route-name-splitter-needle' => '.',
 
     /**
      * Exclude routes by route name
@@ -24,21 +24,21 @@ return [
     ],
 
     /**
-     * Exclude routes by controller
+     * Exclude routes by controller or controller namespace-prefix
      *
-     * [NT: We can exclude routes by controllers. All the routes associated with controller will be excluded]
+     * [NT: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
      */
     'exclude-controllers' => [
         /*
-         * exclude every route which associate with WelcomeController
+         * exclude every route which associate with the prefix namespace
          */
-        // WelcomeController::class
+        'App\Http\Controllers\Auth',
     ],
 
     /**
      * Cache the permissible routes
      */
-    'cache-routes' => [
+    'cache-permissions' => [
       'cacheable' => true,
       'cache-driver' => env('CACHE_DRIVER', 'file')
     ],
