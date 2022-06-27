@@ -29,9 +29,9 @@ class PermissionCacheClearCommand extends Command
      */
     public function handle()
     {
-        Cache::forget(Constant::CACHE_PERMISSIONS_KEY);
+        Cache::forget(Constant::CACHE_PERMISSIONS);
 
-        Cache::forget(Constant::CACHE_ROUTES_COUNT_KEY);
+        Cache::forget(Constant::CACHE_ONLY_PERMISSIONS);
 
         $this->info('laravel-permission-name-generator caches are cleared successfully');
     }

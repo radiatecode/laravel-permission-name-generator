@@ -3,6 +3,18 @@
 
 return [
     /**
+     * Split route name by defined needle
+     */
+    'route-name-splitter-needle'    => '.',
+
+    /**
+     * Custom permissions
+     */
+    'custom-permissions'            => [
+        //
+    ],
+
+    /**
      * Define controller namespace
      *
      * [NT: permissions will be generated from those controller which contains the prefix]
@@ -12,14 +24,9 @@ return [
     ],
 
     /**
-     * Split route name by defined needle
-     */
-    'route-name-splitter-needle' => '.',
-
-    /**
      * Exclude routes by route name
      */
-    'exclude-routes' => [
+    'exclude-routes'                => [
         // route.name
     ],
 
@@ -28,7 +35,7 @@ return [
      *
      * [NT: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
      */
-    'exclude-controllers' => [
+    'exclude-controllers'           => [
         /*
          * exclude every route which associate with the prefix namespace
          */
@@ -38,9 +45,9 @@ return [
     /**
      * Cache the permissible routes
      */
-    'cache-permissions' => [
-      'cacheable' => true,
-      'cache-driver' => env('CACHE_DRIVER', 'file')
+    'cache-permissions'             => [
+        'cacheable'    => true,
+        'cache-driver' => env('CACHE_DRIVER', 'file'),
     ],
 
     /**
@@ -48,5 +55,5 @@ return [
      *
      * [NT: Permissible card only works on bootstrap]
      */
-    'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
+    'card-size-class'               => 'col-md-3 col-lg-3 col-sm-12',
 ];

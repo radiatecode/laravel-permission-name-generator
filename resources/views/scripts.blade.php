@@ -66,7 +66,7 @@
     }
 
     function checkBoxValues() {
-        var arr = $('input[type=checkbox]:checked').map(function () {
+        var arr = $('input[name="permissions[]"]:checked').map(function () {
             return this.value;
         }).get();
 

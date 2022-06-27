@@ -17,7 +17,14 @@ class Permissions
 
     private $globalExcludeControllers = [];
 
-    private $manualPermissions = [];
+    protected $onlyPermissions = [];
+
+    protected $permissions = [];
+
+    public function __construct()
+    {
+        $this->generate();
+    }
 
     public static function make(): Permissions
     {
@@ -26,6 +33,24 @@ class Permissions
 
     public function get(): array
     {
+        return $this->getCachedPermissions();
+    }
+
+    public function getOnlyPermissions()
+    {
+        if (! $this->hasCachedPermissions()) {
+            return $this->onlyPermissions;
+        }
+
+        return Cache::get(Constant::CACHE_ONLY_PERMISSIONS);
+    }
+
+    protected function generate(): Permissions
+    {
+        if ($this->hasCachedPermissions()) {
+            return $this;
+        }
+
         $this->controllerNamespacePrefixes = config(
             'permission-generator.controller-namespace-prefixes'
         );
@@ -40,16 +65,6 @@ class Permissions
 
         $routes = Route::getRoutes();
 
-        $routesCount = count($routes);
-
-        $cacheRoutes = self::getCacheRoutes($routesCount);
-
-        if ($cacheRoutes !== null) {
-            return $cacheRoutes;
-        }
-
-        $permissions = [];
-
         $tempRoutes = [];
 
         foreach ($routes as $route) {
@@ -59,7 +74,6 @@ class Permissions
             if (in_array($routeName, $globalExcludedRoutes)) {
                 continue;
             }
-
 
             $actionName = $route->getActionName();
 
@@ -97,38 +111,54 @@ class Permissions
                 continue;
             }
 
-            $title = self::generatePermissionTitle($controllerInstance);
+            $title = $this->generatePermissionTitle($controllerInstance);
 
             $key = strtolower(Str::slug($title, "-"));
 
-            $permissions[$key][] = [
+            $this->permissions[$key][] = [
                 'slug' => $routeName,
                 'name' => ucwords(str_replace($splitter, ' ', $routeName)),
             ];
 
-            $tempRoutes = $permissions[$key];
+            $this->onlyPermissions[] = $routeName;
+
+            $tempRoutes = $this->permissions[$key];
         }
 
-        // add manual permissions to rendered permissions
-        if ( ! empty($this->manualPermissions)) {
-            foreach ($this->manualPermissions as $key => $permission) {
-                $permissions[$key][] = $permission;
-            }
-        }
+        // add custom permissions to rendered permissions
+        $this->customPermissions();
 
-        self::cachePermissions($routesCount, $permissions);
-
-        return $permissions;
-    }
-
-    public function withManualPermissions(array $permissions): Permissions
-    {
-        $this->manualPermissions = $permissions;
+        $this->cachePermissions();
 
         return $this;
     }
 
-    protected static function generatePermissionTitle($controllerInstance)
+    protected function customPermissions(): Permissions
+    {
+        $customPermissions = config('permission-generator.custom-permissions');
+
+        if (is_array($customPermissions) && ! empty($customPermissions)) {
+            foreach ($customPermissions as $key => $permission) {
+                if (array_key_exists(0, $permission)
+                    && is_array(
+                        $permission[0]
+                    )
+                ) {
+                    foreach ($permission as $item) {
+                        $this->permissions[$key][] = $item;
+                    }
+
+                    continue;
+                }
+
+                $this->permissions[$key][] = $permission;
+            }
+        }
+
+        return $this;
+    }
+
+    protected function generatePermissionTitle($controllerInstance)
     {
         // if the controller use the WithPermissible interface then get the title
         if ($controllerInstance instanceof WithPermissionGenerator) {
@@ -174,38 +204,33 @@ class Permissions
         return false;
     }
 
-    protected static function getCacheRoutes(int $routesCount)
+    protected function getCachedPermissions()
     {
-        if ( ! config('permission-generator.cache-permissions.cacheable')
-            || ! Cache::has(Constant::CACHE_ROUTES_COUNT_KEY)
-        ) {
-            return null;
+        if ( ! $this->hasCachedPermissions()) {
+            return $this->permissions;
         }
 
-        if ($routesCount !== Cache::get(Constant::CACHE_ROUTES_COUNT_KEY)) {
-            Cache::forget(Constant::CACHE_ROUTES_COUNT_KEY);
-            Cache::forget(Constant::CACHE_PERMISSIONS_KEY);
-
-            return null;
-        }
-
-        return Cache::get(Constant::CACHE_PERMISSIONS_KEY);
+        return Cache::get(Constant::CACHE_PERMISSIONS);
     }
 
-    protected static function cachePermissions(int $routesCount, $permissions)
+    protected function hasCachedPermissions(): bool
     {
-        if (config('permission-generator.cache-permissions.cacheable')
-            && ! Cache::has(Constant::CACHE_ROUTES_COUNT_KEY)
-            && ! empty($permissions)
-        ) {
+        return config('permission-generator.cache-permissions.cacheable')
+            && Cache::has(Constant::CACHE_PERMISSIONS);
+    }
+
+    protected function cachePermissions()
+    {
+        if (! $this->hasCachedPermissions() && ! empty($this->permissions)) {
             Cache::put(
-                Constant::CACHE_ROUTES_COUNT_KEY,
-                $routesCount,
+                Constant::CACHE_PERMISSIONS,
+                $this->permissions,
                 now()->addDay()
             );
+
             Cache::put(
-                Constant::CACHE_PERMISSIONS_KEY,
-                $permissions,
+                Constant::CACHE_ONLY_PERMISSIONS,
+                $this->onlyPermissions,
                 now()->addDay()
             );
         }
