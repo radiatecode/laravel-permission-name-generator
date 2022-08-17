@@ -17,7 +17,7 @@ return [
     /**
      * Define controller namespace
      *
-     * [NT: permissions will be generated from those controller which contains the prefix]
+     * [NT: permissions will be generated from those controller which contains the defined prefix]
      */
     'controller-namespace-prefixes' => [
         'App\Http\Controllers',
@@ -43,7 +43,7 @@ return [
     ],
 
     /**
-     * Cache the permissible routes
+     * Cache the rendered permission names
      */
     'cache-permissions'             => [
         'cacheable'    => true,
@@ -53,7 +53,7 @@ return [
     /**
      * Permission card size
      *
-     * [NT: Permissible card only works on bootstrap]
+     * [NT: Predefined permission cards works on bootstrap]
      */
     'card-size-class'               => 'col-md-3 col-lg-3 col-sm-12',
 ];

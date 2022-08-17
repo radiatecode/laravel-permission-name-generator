@@ -1,59 +1,8 @@
 # Laravel Permission Name Generator
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/radiatecode/laravel-route-permission.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-route-permission)
-[![Total Downloads](https://img.shields.io/packagist/dt/radiatecode/laravel-route-permission.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-route-permission)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/radiatecode/laravel-permission-name-generator.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-permission-name-generator)
+[![Total Downloads](https://img.shields.io/packagist/dt/radiatecode/laravel-permission-name-generator.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-permission-name-generator)
 
-This package will generate permission names from route names. Permissions  are grouped by controller name. These permission names can be usefull for authorization (role-permission base system)
-
-## Example
-### Generate permission view
-![Stats](img/permission-view.png)
-
-**In controller:**
-
-```php
-class RoleController extends Controller
-{
-    public function permissionsShow($id)
-    {
-        $role = Role::query()->findOrFail($id);
-
-        return PermissionsView::withRolePermissions(
-            $role->role_name,
-            json_decode($role->role_permissions), // assume role permissions stored as json encoded
-            route('create-role-permission', $role->id) // permission save url for a role
-        )->view('app.role.permissions');
-    }
-}
-```
-**In view (blade) file:**
-```html
-<div class="permissions">
-    {!! $permissionCards !!}
-</div>
-
-......
-<!-- generate scripts -->
-{!! $permissionScripts !!}
-```
-**Saving permissions for a role:**
-```php
-Route::post('/role/{id}/permissions/create',[RoleController::class,'permissionStore'])->name('create-role-permission');
-```
-```php
-use \Illuminate\Http\Request;
-class RoleController extends Controller
-{
-     public function permissionStore(Request $request,$id)
-    {
-        $role = Role::find($id);
-
-        $role->role_permissions = json_encode($request->get('permissions')); // get the submitted permissions
-        $role->save();
-
-        return response()->json('success',201);
-    }
-}
-```
+This package will generate permission names from routes. In many application we create static permission names (ex: create-post, edit-post, delete-post) to check user's accessability, using the package can helps you to generate permission names dynamically.
 # Requirements
 - [PHP >= 7.1](https://www.php.net/)
 - [Laravel 5.7|6.x|7.x|8.x](https://github.com/laravel/framework)
@@ -75,8 +24,14 @@ Publish default permission view files (optional)
 # Usage
 
 ## PermissionGenerator trait [Optional]
-While this package generate permission names from route names, in some cases we might need to exclude some permission names. To do so implement the **WithPermissionGenerator** contracts in the controller, then use the **PermissionGenerator** trait. We can use `permissionExcludeMethods()` to exclude permissions by route associative method. We can also define permission group name `permissionGroupTitle()`. 
+While this package generate permission names from route names, in some cases we might need to exclude some routes so that it won't generate as permission names. To do so implement the **WithPermissionGenerator** contracts in the controller, then use the **PermissionGenerator** trait. 
 
+Available methods in **PermissionGenerator** trait
+
+- `permissionExcludeMethods()` : use to exculde a route from being generated as permission name.
+- `permissionGroupTitle()`: Use to set group title for permissions
+
+**Example**
 ```php
 use App\Http\Controllers\Controller;
 use RadiateCode\LaravelRoutePermission\Contracts\WithPermissionGenerator;
@@ -88,17 +43,14 @@ class OfficeController extends Controller implements WithPermissionGenerator
    
     public function __construct()
     {
-         $this->permissionGroupTitle('Office Crud Permission')
-            ->permissionExcludeMethods('index','listDatatable'); // when necessary exclude specific routes by the controller methods
+         $this->permissionGroupTitle('Office Crud Permission')->permissionExcludeMethods('index','listDatatable'); // index and listDatatable associate routes won't be generated as permission names
     }
 }
 ```
 
-> **PermissionGenerator** trait is optional. Because if no permissible title defined, then this package dynamically generate a title based on controller name, And routes/permissions can be excluded in the config file.
+> **PermissionGenerator** trait is optional. Because if no permissible title defined, then this package dynamically generate a title based on controller name, And routes can be excluded in the config file.
 
-## Get Permissions
-
-You can get permissible routes And make your own permissions view in order to set role permissions.
+## Get permissions names
 
     RadiateCode\PermissionNameGenerator\Permissions::make()->get();
 
@@ -106,103 +58,183 @@ You can get permissible routes And make your own permissions view in order to se
 
 ![Stats](img/permissible-routes-output.png)
 
-> Under the hood it gets all the routes which registered in **web.php** and only take those routes which has permission middleware. The permissible routes grouped by controller.
-
 ## Permission View Builder Facade
-If you don't want to make permission view by your own, then you can use predefined permissions view [**PermissionViewBuilder** facade]. 
+The package comes with predefined a view with permission names
 
-See the above [example](#example)
+[**PermissionViewBuilder** facade]. 
 
 **Builder methods:**
 
-- permissionView() : generate bootstrap permissions card based on permissible routes, and config defined action buttons.
-- withRolePermissions($roleName,$rolePermissions) : it is used to select all the permissions that have access to a particular role.
-- permissionScripts($url = null) : generate functions for check all and uncheck all buttons. The **$url** param used to submit the selected permissions for specific role.
+- `view(string $view, array $data = [])`: set your view, this method will render your view with two predefined keys (permissionCards, permissionScripts) and put those keys according to you view layout
 
-> **Note:** When submit the permissions from predefined view to any post routes you need to get the permissions by 
+- `withRolePermissions(string $roleName,arra $rolePermissions,string $permissionsSaveUrl = null)`: This method helps you to pre-checked the permissions of a role, in the 3rd arg you can define a url where you can save the role permissions
+
+### Submiting permissions can be get by
+
 > ```php
 >   $request->get('permissions');  // array of permissions
 > ```
 
+## Example
+### Permissions view
+![Stats](img/permission-view.png)
+
+**In controller:**
+
+```php
+namespace RadiateCode\PermissionNameGenerator\Facades\PermissionsView;
+use App\Models\Role;
+
+class RoleController extends Controller
+{
+    public function permissionsShow($id)
+    {
+        $role = Role::query()->findOrFail($id);
+
+        return PermissionsView::withRolePermissions(
+            $role->role_name,
+            json_decode($role->role_permissions), // assume role permissions stored as json encoded
+            route('create-role-permission', $role->id) // permission save url for a role
+        )->view('app.role.permissions'); // your view
+    }
+}
+```
+**Create the permission savings route**
+
+```php
+Route::post('/role/{id}/permissions/create',[RoleController::class,'permissionStore'])->name('create-role-permission');
+```
+```php
+use \Illuminate\Http\Request;
+class RoleController extends Controller
+{
+     public function permissionStore(Request $request,$id)
+    {
+        $role = Role::find($id);
+
+        $role->role_permissions = json_encode($request->get('permissions')); // get the submitted permissions
+        $role->save();
+
+        return response()->json('success',201);
+    }
+}
+```
+
+**In app/role/permissions.blade.php file:**
+```html
+@extends('layouts.app')
+
+@section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-dark">
+                <div class="card-header">
+                    <h3 class="card-title">Role Permissions</h3>
+                </div>
+                <div class="card-body">
+                    <!-- the key generated by permission view builder of permission name generator -->
+                    {!! $permissionCards !!}
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('js')
+<!-- the key generated by permission view builder of permission name generator -->
+    {!! $permissionScripts !!}
+@endpush
+```
+
+> The layout is only for demo purpose, you should only notice the `$permissionCards` and `$permissionScripts` variables, and put those acording to your view layout. 
 
 ## Configuration
 
-Config the **config/route-permission.php** file.
+Config the **config/permission-generator.php** file.
 
-Define the name of the permission middlewares. The package recognise the route as permissible route by these middlewares.
+1. If route name contains any special char then split the the name by that char. It will use to generate route title. For example if route name is **create.post** then it's title would be **Create Post**
 ```php
 /**
- * Permission middlewares
- *
- * [nt: define the middlewares by which we applied permissions]
+ * Split route name by defined needle
  */
-'permission-middlewares' => [
-    // 'auth', 'role-permissions'
+'route-name-splitter-needle'    => '.',
+```
+
+2. You can defined custom permissions 
+```php
+/**
+ * Custom permissions
+ */
+'custom-permissions'  => [
+    //
 ],
 ```
-If route name contains any special char then split the the name by that char. It will use to generate route title. For example if route name is **create.designation** then it's title would be **Create Designation**
+> Example 
+> ```php
+> 'custom-permissions' = [
+>    'post-permission' => 'approve-permission',
+>    'user-permission' => ['active-user','inactive-user']
+> ]
+>```
+
+3. Each route associate with controllers, so you have to define the controller namespace so that the generator can generate permission names from those route associate controllers. By default all the controllers associate routes will be generated as permission names.
+
 ```php
 /**
- * Split route name by defined character
+ * Define controller namespace
+ *
+ * [NT: permissions will be generated from those controller which contains the defined prefix]
  */
-'route-name-splitter' => '.',
+'controller-namespace-prefixes' => [
+    'App\Http\Controllers',
+],
 ```
-Exclude routes by route name. If we don't want to include any routes as permissible routes then we can exclude those in here.
+4. Exclude routes by controller. If we want to exclude routes of a controller then we can exclude it. By default all auth related routes will be excluded from being generated as permission names.
+
 ```php
-/**
+ /**
+ * Exclude routes by controller or controller namespace-prefix
+ *
+ * [NT: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
+ */
+'exclude-controllers'           => [
+    /*
+        * exclude every route which associate with the prefix namespace
+        */
+    'App\Http\Controllers\Auth',
+],
+```
+
+5. **Or,** we can exclude routes by route name
+
+```php
+ /**
  * Exclude routes by route name
  */
-'exclude-routes' => [
+'exclude-routes'                => [
     // route.name
 ],
 ```
-Exclude routes by controller. If we want to exclude all routes of a controller then we can exclude it here
+
+6. Caching the permission names
 
 ```php
 /**
- * Exclude routes by controller
- *
- * [NT: We can exclude routes by controllers. All the routes associated with controller will be excluded]
+ * Cache the rendered permission names
  */
-'exclude-controllers' => [
-    /**
-     * exclude every route which associate with WelcomeController
-     */
-    // WelcomeController::class
+'cache-permissions'             => [
+    'cacheable'    => true,
+    'cache-driver' => env('CACHE_DRIVER', 'file'),
 ],
 ```
-Caching the permissible routes
-```php
-/**
- * Cache the permissible routes
- */
-'cache-routes' => [
-  'cacheable' => true,
-  'cache-driver' => env('CACHE_DRIVER', 'file')
-],
-```
-Buttons generate in the permission view
-```php
-/**
- * permission button used to checked / unchecked all routes
- * and save permissions for a particular role
- *
- * nt: extra button can be added
- */
-'permission-buttons' => [
-    '<button type="button" class="btn btn-primary" onclick="checkAll()"><i class="fa fa-check-square"></i> Check All</button>',
-    '<button type="button" class="btn btn-warning" onclick="uncheckAll()"><i class="fa fa-square"></i> Uncheck All </button>',
-    '<button type="button" class="btn btn-success save-btn" onclick="saveRolePermissions()" title="save role permission"><i class="save-loader fa fa-save"></i> Save </button>',
-],
-```
-Permission card size (bootstrap grid)
+7. Permission card size (bootstrap grid)
 ```php
 /**
  * Permission card size
  *
- * [nt: permissible card only works on bootstrap]
+ * [NT: Predefined permission cards works on bootstrap]
  */
-'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
+'card-size-class'               => 'col-md-3 col-lg-3 col-sm-12',
 ```
 ## Contributing
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.

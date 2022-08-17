@@ -140,9 +140,7 @@ class Permissions
         if (is_array($customPermissions) && ! empty($customPermissions)) {
             foreach ($customPermissions as $key => $permission) {
                 if (array_key_exists(0, $permission)
-                    && is_array(
-                        $permission[0]
-                    )
+                    && is_array($permission[0])
                 ) {
                     foreach ($permission as $item) {
                         $this->permissions[$key][] = $item;
