@@ -2,7 +2,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/radiatecode/laravel-permission-name-generator.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-permission-name-generator)
 [![Total Downloads](https://img.shields.io/packagist/dt/radiatecode/laravel-permission-name-generator.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-permission-name-generator)
 
-This package will generate permission names from routes. In many application we create static permission names (ex: create-post, edit-post, delete-post) to check user's accessability, using the package can helps you to generate permission names dynamically.
+This package will generate permission names from route names. In many application we create static permission names (ex: create-post, edit-post, delete-post) to check user's accessability, using the package can helps you to generate permission names dynamically.
 # Requirements
 - [PHP >= 7.1](https://www.php.net/)
 - [Laravel 5.7|6.x|7.x|8.x](https://github.com/laravel/framework)
@@ -48,7 +48,7 @@ class OfficeController extends Controller implements WithPermissionGenerator
 }
 ```
 
-> **PermissionGenerator** trait is optional. Because if no permissible title defined, then this package dynamically generate a title based on controller name, And routes can be excluded in the config file.
+> **PermissionGenerator** trait is optional. Because if no group permission title defined, then this package dynamically generate a title based on controller name. Routes can be excluded in the config file in order to tell the package not to generate those routes as permission names.
 
 ## Get permissions names
 
@@ -56,7 +56,9 @@ class OfficeController extends Controller implements WithPermissionGenerator
 
 **Output**
 
-![Stats](img/permissible-routes-output.png)
+![Stats](img/permissions.png)
+
+> Notice the key `department-permissions` it generated from `DepartmentController` and permissions are generated from DepartmentController's routes.
 
 ## Permission View Builder Facade
 The package comes with predefined a view with permission names
@@ -76,9 +78,6 @@ The package comes with predefined a view with permission names
 > ```
 
 ## Example
-### Permissions view
-![Stats](img/permission-view.png)
-
 **In controller:**
 
 ```php
@@ -99,27 +98,6 @@ class RoleController extends Controller
     }
 }
 ```
-**Create the permission savings route**
-
-```php
-Route::post('/role/{id}/permissions/create',[RoleController::class,'permissionStore'])->name('create-role-permission');
-```
-```php
-use \Illuminate\Http\Request;
-class RoleController extends Controller
-{
-     public function permissionStore(Request $request,$id)
-    {
-        $role = Role::find($id);
-
-        $role->role_permissions = json_encode($request->get('permissions')); // get the submitted permissions
-        $role->save();
-
-        return response()->json('success',201);
-    }
-}
-```
-
 **In app/role/permissions.blade.php file:**
 ```html
 @extends('layouts.app')
@@ -147,12 +125,35 @@ class RoleController extends Controller
 ```
 
 > The layout is only for demo purpose, you should only notice the `$permissionCards` and `$permissionScripts` variables, and put those acording to your view layout. 
+### Permissions view
+![Stats](img/permission-view.png)
+
+**Create the permission savings route**
+
+```php
+Route::post('/role/{id}/permissions/create',[RoleController::class,'permissionStore'])->name('create-role-permission');
+```
+```php
+use \Illuminate\Http\Request;
+class RoleController extends Controller
+{
+     public function permissionStore(Request $request,$id)
+    {
+        $role = Role::find($id);
+
+        $role->role_permissions = json_encode($request->get('permissions')); // get the submitted permissions
+        $role->save();
+
+        return response()->json('success',201);
+    }
+}
+```
 
 ## Configuration
 
 Config the **config/permission-generator.php** file.
 
-1. If route name contains any special char then split the the name by that char. It will use to generate route title. For example if route name is **create.post** then it's title would be **Create Post**
+1. If route name contains any special char then split the name by that char. It will use to generate permission title. For example if route name is **create.post** then permission title would be **Create Post**
 ```php
 /**
  * Split route name by defined needle
@@ -172,18 +173,26 @@ Config the **config/permission-generator.php** file.
 > Example 
 > ```php
 > 'custom-permissions' = [
->    'post-permission' => 'approve-permission',
->    'user-permission' => ['active-user','inactive-user']
+>    'user-permission' => ['active-user','inactive-user'],
+>    'bonus-permission' => [
+>       'name' => 'approve-own-department',
+>       'title' => 'Approve Own Department'
+>     ]
 > ]
+>
 >```
+> Note: notice the `user-permission` key which contains only permission name, the package dynamically make a title for the permission name.
+>
 
-3. Each route associate with controllers, so you have to define the controller namespace so that the generator can generate permission names from those route associate controllers. By default all the controllers associate routes will be generated as permission names.
+3. We can define controller by it's namespace, it could be whole namespace or it could be sub/prefix of controller namespace. This config play vital role to generate permissions because permissions will be generated only for our defined controllers.
 
 ```php
 /**
  * Define controller namespace
  *
- * [NT: permissions will be generated from those controller which contains the defined prefix]
+ * By Default permissions will be generated from all controller's routes
+ * 
+ * [Note: permissions will be generated from those controller which contains the defined prefix]
  */
 'controller-namespace-prefixes' => [
     'App\Http\Controllers',
@@ -193,14 +202,14 @@ Config the **config/permission-generator.php** file.
 
 ```php
  /**
- * Exclude routes by controller or controller namespace-prefix
+ * Exclude routes by controller whole namespace or sub/prefix of controller namespace
  *
- * [NT: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
+ * By default all auth controller's routes will be excluded from being generated as permission names
+ * 
+ * [Note: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
  */
 'exclude-controllers'           => [
-    /*
-        * exclude every route which associate with the prefix namespace
-        */
+    // exclude every route which associate with the namespace-prefix of controller 
     'App\Http\Controllers\Auth',
 ],
 ```

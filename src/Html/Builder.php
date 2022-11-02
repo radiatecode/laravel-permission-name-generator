@@ -52,6 +52,8 @@ class Builder
 
     protected function render(): string
     {
+        dd(Permissions::make()->get());
+        
         return View::make(
             'permission-generator::permission',
             [

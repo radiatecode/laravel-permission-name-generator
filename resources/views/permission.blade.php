@@ -29,8 +29,8 @@
                         <ul style="list-style-type: none">
                            @foreach($values as $route)
                                 <li>
-                                    <input type="checkbox" name="permissions[]" value="{{ $route['slug'] }}" id="{{ $route['slug'] }}" {{ in_array($route['slug'],$rolePermissions) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="{{ $route['slug'] }}">{{ $route['name'] }}</label>
+                                    <input type="checkbox" name="permissions[]" value="{{ $route['name'] }}" id="{{ $route['name'] }}" {{ in_array($route['name'],$rolePermissions) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="{{ $route['name'] }}">{{ $route['title'] }}</label>
                                 </li>
                             @endforeach
                         </ul>

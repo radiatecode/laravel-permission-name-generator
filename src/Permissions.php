@@ -21,8 +21,12 @@ class Permissions
 
     protected $permissions = [];
 
+    protected $splitter;
+
     public function __construct()
     {
+        $this->splitter = config('permission-generator.route-name-splitter-needle');
+
         $this->generate();
     }
 
@@ -38,7 +42,7 @@ class Permissions
 
     public function getOnlyPermissions()
     {
-        if (! $this->hasCachedPermissions()) {
+        if (!$this->hasCachedPermissions()) {
             return $this->onlyPermissions;
         }
 
@@ -61,8 +65,6 @@ class Permissions
 
         $globalExcludedRoutes = config('permission-generator.exclude-routes');
 
-        $splitter = config('permission-generator.route-name-splitter-needle');
-
         $routes = Route::getRoutes();
 
         $tempRoutes = [];
@@ -83,15 +85,16 @@ class Permissions
 
             // $routeMiddlewares = $route->gatherMiddleware();
 
-            if ($controller == 'Closure'
-                || ! $this->isControllerValid($controller)
+            if (
+                $controller == 'Closure'
+                || !$this->isControllerValid($controller)
                 || $this->isExcludedController($controller)
             ) {
                 continue;
             }
 
 
-            $controllerInstance = app('\\'.$controller);
+            $controllerInstance = app('\\' . $controller);
 
             // if the controller use the WithPermissible interface then find the excluded routes
             if ($controllerInstance instanceof WithPermissionGenerator) {
@@ -111,13 +114,14 @@ class Permissions
                 continue;
             }
 
+            // permission group title
             $title = $this->generatePermissionTitle($controllerInstance);
 
             $key = strtolower(Str::slug($title, "-"));
 
             $this->permissions[$key][] = [
-                'slug' => $routeName,
-                'name' => ucwords(str_replace($splitter, ' ', $routeName)),
+                'name' => $routeName, // permission name
+                'title' => ucwords(str_replace($this->splitter, ' ', $routeName)), // permission title
             ];
 
             $this->onlyPermissions[] = $routeName;
@@ -137,18 +141,21 @@ class Permissions
     {
         $customPermissions = config('permission-generator.custom-permissions');
 
-        if (is_array($customPermissions) && ! empty($customPermissions)) {
+        if (is_array($customPermissions) && !empty($customPermissions)) {
             foreach ($customPermissions as $key => $permission) {
-                if (array_key_exists(0, $permission)
-                    && is_array($permission[0])
-                ) {
+                // when the permission only contains permission name
+                if (array_key_exists(0, $permission) && is_array($permission)) { 
                     foreach ($permission as $item) {
-                        $this->permissions[$key][] = $item;
+                        $this->permissions[$key][] = [
+                            'name' => $item,
+                            'title' => ucwords(str_replace($this->splitter, ' ', $item)),
+                        ];
                     }
 
                     continue;
                 }
 
+                // when permission has valid permission structure (ex: slug, name key available)   
                 $this->permissions[$key][] = $permission;
             }
         }
@@ -162,7 +169,7 @@ class Permissions
         if ($controllerInstance instanceof WithPermissionGenerator) {
             $title = $controllerInstance->getPermissionTitle();
 
-            if ( ! empty($title)) {
+            if (!empty($title)) {
                 return $title;
             }
         }
@@ -174,10 +181,10 @@ class Permissions
         $name = preg_replace('/([a-z])([A-Z])/s', '$1 $2', $controllerName);
 
         if (Str::contains($controllerName, 'Controller')) {
-            return str_replace('Controller', 'Permission', $name);
+            return str_replace('Controller', 'Permissions', $name);
         }
 
-        return $name.' Permission';
+        return $name . ' Permissions';
     }
 
     protected function isExcludedController($controller): bool
@@ -204,7 +211,7 @@ class Permissions
 
     protected function getCachedPermissions()
     {
-        if ( ! $this->hasCachedPermissions()) {
+        if (!$this->hasCachedPermissions()) {
             return $this->permissions;
         }
 
@@ -219,7 +226,7 @@ class Permissions
 
     protected function cachePermissions()
     {
-        if (! $this->hasCachedPermissions() && ! empty($this->permissions)) {
+        if (!$this->hasCachedPermissions() && !empty($this->permissions)) {
             Cache::put(
                 Constant::CACHE_PERMISSIONS,
                 $this->permissions,

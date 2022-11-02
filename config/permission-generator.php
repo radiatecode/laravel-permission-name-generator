@@ -17,7 +17,9 @@ return [
     /**
      * Define controller namespace
      *
-     * [NT: permissions will be generated from those controller which contains the defined prefix]
+     * By Default permissions will be generated from all controller's routes
+     * 
+     * [Note: permissions will be generated from those controller which contains the defined whole or prefix of controller namespace]
      */
     'controller-namespace-prefixes' => [
         'App\Http\Controllers',
@@ -31,14 +33,14 @@ return [
     ],
 
     /**
-     * Exclude routes by controller or controller namespace-prefix
+     * Exclude routes by controller whole namespace or sub/prefix of controller namespace
      *
-     * [NT: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
+     * By default all auth controller's routes will be excluded from being generated as permission names
+     * 
+     * [Note: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
      */
     'exclude-controllers'           => [
-        /*
-         * exclude every route which associate with the prefix namespace
-         */
+        // exclude every route which associate with the prefix of controller namespace 
         'App\Http\Controllers\Auth',
     ],
 
