@@ -3,21 +3,15 @@
 
 namespace RadiateCode\PermissionNameGenerator;
 
-
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
+use Closure;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Route;
-use RadiateCode\PermissionNameGenerator\Contracts\WithPermissionGenerator;
 use RadiateCode\PermissionNameGenerator\Enums\Constant;
+use RadiateCode\PermissionNameGenerator\Services\ResourcePermissionGenerator;
+use RadiateCode\PermissionNameGenerator\Services\RoutePermissionGenerator;
 
 class Permissions
 {
-    private $controllerNamespacePrefixes = [];
-
-    private $globalExcludeControllers = [];
-
-    protected $onlyPermissions = [];
+    protected $onlyPermissionsNames = [];
 
     protected $permissions = [];
 
@@ -26,8 +20,6 @@ class Permissions
     public function __construct()
     {
         $this->splitter = config('permission-generator.route-name-splitter-needle');
-
-        $this->generate();
     }
 
     public static function make(): Permissions
@@ -35,106 +27,56 @@ class Permissions
         return new self();
     }
 
-    public function get(): array
-    {
-        return $this->getCachedPermissions();
+    public function fromAttributes(){
+        
     }
 
-    public function getOnlyPermissions()
-    {
-        if (!$this->hasCachedPermissions()) {
-            return $this->onlyPermissions;
-        }
-
-        return Cache::get(Constant::CACHE_ONLY_PERMISSIONS);
-    }
-
-    protected function generate(): Permissions
+    public function fromResources(array $resources)
     {
         if ($this->hasCachedPermissions()) {
             return $this;
         }
 
-        $this->controllerNamespacePrefixes = config(
-            'permission-generator.controller-namespace-prefixes'
-        );
+        $resourceGenerator = (new ResourcePermissionGenerator($resources))->generate();
 
-        $this->globalExcludeControllers = config(
-            'permission-generator.exclude-controllers'
-        );
+        $this->permissions = $resourceGenerator['permissions'];
+        $this->onlyPermissionsNames = $resourceGenerator['only_permission_names'];
 
-        $globalExcludedRoutes = config('permission-generator.exclude-routes');
-
-        $routes = Route::getRoutes();
-
-        $tempRoutes = [];
-
-        foreach ($routes as $route) {
-            $routeName = $route->getName();
-
-            // exclude routes which defined in the config
-            if (in_array($routeName, $globalExcludedRoutes)) {
-                continue;
-            }
-
-            $actionName = $route->getActionName();
-
-            $actionExtract = explode('@', $actionName);
-
-            $controller = $actionExtract[0];
-
-            // $routeMiddlewares = $route->gatherMiddleware();
-
-            if (
-                $controller == 'Closure'
-                || !$this->isControllerValid($controller)
-                || $this->isExcludedController($controller)
-            ) {
-                continue;
-            }
-
-
-            $controllerInstance = app('\\' . $controller);
-
-            // if the controller use the WithPermissible interface then find the excluded routes
-            if ($controllerInstance instanceof WithPermissionGenerator) {
-                $controllerMethod = $actionExtract[1];
-
-                $excludeMethods = $controllerInstance->getExcludeMethods();
-
-                if (in_array($controllerMethod, $excludeMethods)) {
-                    continue;
-                }
-            }
-
-            $tempPluckRoutes = Arr::pluck($tempRoutes, 'slug');
-
-            // check is the current route store in temp routes in order to avoid duplicacy
-            if (in_array($routeName, $tempPluckRoutes)) {
-                continue;
-            }
-
-            // permission group title
-            $title = $this->generatePermissionTitle($controllerInstance);
-
-            $key = strtolower(Str::slug($title, "-"));
-
-            $this->permissions[$key][] = [
-                'name' => $routeName, // permission name
-                'title' => ucwords(str_replace($this->splitter, ' ', $routeName)), // permission title
-            ];
-
-            $this->onlyPermissions[] = $routeName;
-
-            $tempRoutes = $this->permissions[$key];
-        }
-
-        // add custom permissions to rendered permissions
         $this->customPermissions();
-
-        $this->cachePermissions();
+       // $this->cachePermissions();
 
         return $this;
+    }
+
+    public function fromRoutes()
+    {
+        if ($this->hasCachedPermissions()) {
+            return $this;
+        }
+
+        $routePermissionGenerator = (new RoutePermissionGenerator())->generate();
+
+        $this->permissions = $routePermissionGenerator['permissions'];
+        $this->onlyPermissionsNames = $routePermissionGenerator['only_permission_names'];
+
+        $this->customPermissions();
+        //$this->cachePermissions();
+
+        return $this;
+    }
+
+    public function get(): array
+    {
+        return $this->getCachedPermissions();
+    }
+
+    public function getOnlyPermissionsNames()
+    {
+        if (!$this->hasCachedPermissions()) {
+            return $this->onlyPermissionsNames;
+        }
+
+        return Cache::get(Constant::CACHE_ONLY_PERMISSIONS);
     }
 
     protected function customPermissions(): Permissions
@@ -144,7 +86,7 @@ class Permissions
         if (is_array($customPermissions) && !empty($customPermissions)) {
             foreach ($customPermissions as $key => $permission) {
                 // when the permission only contains permission name
-                if (array_key_exists(0, $permission) && is_array($permission)) { 
+                if (array_key_exists(0, $permission) && is_array($permission)) {
                     foreach ($permission as $item) {
                         $this->permissions[$key][] = [
                             'name' => $item,
@@ -161,52 +103,6 @@ class Permissions
         }
 
         return $this;
-    }
-
-    protected function generatePermissionTitle($controllerInstance)
-    {
-        // if the controller use the WithPermissible interface then get the title
-        if ($controllerInstance instanceof WithPermissionGenerator) {
-            $title = $controllerInstance->getPermissionTitle();
-
-            if (!empty($title)) {
-                return $title;
-            }
-        }
-
-        // Or, generate permission title from controller name
-        $controllerName = class_basename($controllerInstance);
-
-        // place white space between controller (PascalCase) name
-        $name = preg_replace('/([a-z])([A-Z])/s', '$1 $2', $controllerName);
-
-        if (Str::contains($controllerName, 'Controller')) {
-            return str_replace('Controller', 'Permissions', $name);
-        }
-
-        return $name . ' Permissions';
-    }
-
-    protected function isExcludedController($controller): bool
-    {
-        foreach ($this->globalExcludeControllers as $prefix) {
-            if (Str::contains($controller, $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function isControllerValid($controller): bool
-    {
-        foreach ($this->controllerNamespacePrefixes as $prefix) {
-            if (Str::contains($controller, $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     protected function getCachedPermissions()
@@ -235,7 +131,7 @@ class Permissions
 
             Cache::put(
                 Constant::CACHE_ONLY_PERMISSIONS,
-                $this->onlyPermissions,
+                $this->onlyPermissionsNames,
                 now()->addDay()
             );
         }

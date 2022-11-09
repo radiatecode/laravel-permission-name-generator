@@ -23,6 +23,19 @@ Publish default permission view files (optional)
 
 # Usage
 
+Here are some defined routes for department
+
+![Stats](img/department-rouets.png)
+### Now get permissions names from defined routes
+
+    RadiateCode\PermissionNameGenerator\Permissions::make()->get();
+
+**Output**
+
+![Stats](img/permissions.png)
+
+> Notice the key `department-permissions` it generated from `DepartmentController` and permissions are generated from DepartmentController's routes.
+
 ## PermissionGenerator trait [Optional]
 While this package generate permission names from route names, in some cases we might need to exclude some routes so that it won't generate as permission names. To do so implement the **WithPermissionGenerator** contracts in the controller, then use the **PermissionGenerator** trait. 
 
@@ -50,16 +63,6 @@ class OfficeController extends Controller implements WithPermissionGenerator
 
 > **PermissionGenerator** trait is optional. Because if no group permission title defined, then this package dynamically generate a title based on controller name. Routes can be excluded in the config file in order to tell the package not to generate those routes as permission names.
 
-## Get permissions names
-
-    RadiateCode\PermissionNameGenerator\Permissions::make()->get();
-
-**Output**
-
-![Stats](img/permissions.png)
-
-> Notice the key `department-permissions` it generated from `DepartmentController` and permissions are generated from DepartmentController's routes.
-
 ## Permission View Builder Facade
 The package comes with predefined a view with permission names
 
@@ -77,7 +80,7 @@ The package comes with predefined a view with permission names
 >   $request->get('permissions');  // array of permissions
 > ```
 
-## Example
+### Example
 **In controller:**
 
 ```php
@@ -184,7 +187,7 @@ Config the **config/permission-generator.php** file.
 > Note: notice the `user-permission` key which contains only permission name, the package dynamically make a title for the permission name.
 >
 
-3. We can define controller by it's namespace, it could be whole namespace or it could be sub/prefix of controller namespace. This config play vital role to generate permissions because permissions will be generated only for our defined controllers.
+3. Define controller by it's namespace, it could be whole namespace or it could be sub/prefix of controller namespace. This config play vital role to generate permissions because permissions will be generated only for defined controllers.
 
 ```php
 /**

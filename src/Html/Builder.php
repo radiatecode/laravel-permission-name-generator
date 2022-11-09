@@ -50,14 +50,12 @@ class Builder
             ->with('permissionScripts', $this->scripts());
     }
 
-    protected function render(): string
+    protected function render(array $permissions = []): string
     {
-        dd(Permissions::make()->get());
-        
         return View::make(
             'permission-generator::permission',
             [
-                'routes'          => Permissions::make()->get(),
+                'permissions'     => Permissions::make()->fromRoutes()->get(),
                 'roleName'        => $this->roleName,
                 'rolePermissions' => $this->rolePermissions,
             ]

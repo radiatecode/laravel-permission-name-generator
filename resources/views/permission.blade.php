@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    @foreach($routes as $key => $values)
+    @foreach($permissions as $key => $values)
     <div class="{{ config('permission-generator.card-size-class') }}">
         <div class="card permission-card">
             <div class="card-header permission-header">
@@ -25,7 +25,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="{{ $key }}-routes-checkbox">
+                    <div class="{{ $key }}-permissions-checkbox">
                         <ul style="list-style-type: none">
                            @foreach($values as $route)
                                 <li>

@@ -57,5 +57,14 @@ return [
      *
      * [NT: Predefined permission cards works on bootstrap]
      */
-    'card-size-class'               => 'col-md-3 col-lg-3 col-sm-12',
+    'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
+
+
+    'resource-permission-tags' => [
+        'create',
+        'edit',
+        'show',
+        'delete',
+        'view-list'
+    ],
 ];
