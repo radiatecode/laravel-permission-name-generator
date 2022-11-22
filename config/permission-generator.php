@@ -59,7 +59,11 @@ return [
      */
     'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
 
-
+    /**
+     * These tage used to generate permissions on given resources
+     * 
+     * [Ex: create-posts,'edit-posts','view-list-posts' etc]
+     */
     'resource-permission-tags' => [
         'create',
         'edit',

@@ -16,6 +16,10 @@ class Builder
 
     protected $url = null;
 
+    protected string $source = 'routes';
+
+    protected array $resources = [];
+
     /**
      * @param  string  $roleName
      * @param  array  $rolePermissions
@@ -38,6 +42,33 @@ class Builder
     }
 
     /**
+     * Permissions generate from route names
+     *
+     * @return Builder
+     */
+    public function fromRoutes()
+    {
+        $this->source = 'routes';
+
+        return $this;
+    }
+
+    /**
+     * Permissions generate from resources
+     *
+     * @param array $resources
+     * @return Builder
+     */
+    public function fromResources(array $resources)
+    {
+        $this->source = 'resources';
+
+        $this->resources = $resources;
+
+        return $this;
+    }
+
+    /**
      * @param  string  $view
      * @param  array  $data
      *
@@ -52,10 +83,11 @@ class Builder
 
     protected function render(array $permissions = []): string
     {
+
         return View::make(
             'permission-generator::permission',
             [
-                'permissions'     => Permissions::make()->fromRoutes()->get(),
+                'permissions'     => $this->resolvePermissions(),
                 'roleName'        => $this->roleName,
                 'rolePermissions' => $this->rolePermissions,
             ]
@@ -65,5 +97,14 @@ class Builder
     protected function scripts(): string
     {
         return View::make('permission-generator::scripts', ['url' => $this->url])->render();
+    }
+
+    protected function resolvePermissions(): array
+    {
+        if ($this->source == 'routes') {
+            return Permissions::make()->fromRoutes()->get();
+        }
+
+        return Permissions::make()->fromResources($this->resources)->get();
     }
 }

@@ -27,10 +27,6 @@ class Permissions
         return new self();
     }
 
-    public function fromAttributes(){
-        
-    }
-
     public function fromResources(array $resources)
     {
         if ($this->hasCachedPermissions()) {
@@ -43,7 +39,7 @@ class Permissions
         $this->onlyPermissionsNames = $resourceGenerator['only_permission_names'];
 
         $this->customPermissions();
-       // $this->cachePermissions();
+        $this->cachePermissions();
 
         return $this;
     }
@@ -60,7 +56,7 @@ class Permissions
         $this->onlyPermissionsNames = $routePermissionGenerator['only_permission_names'];
 
         $this->customPermissions();
-        //$this->cachePermissions();
+        $this->cachePermissions();
 
         return $this;
     }
