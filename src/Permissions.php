@@ -81,20 +81,20 @@ class Permissions
 
         if (is_array($customPermissions) && !empty($customPermissions)) {
             foreach ($customPermissions as $key => $permission) {
-                // when the permission only contains permission name
-                if (array_key_exists(0, $permission) && is_array($permission)) {
-                    foreach ($permission as $item) {
+                foreach ($permission as $item) {
+                    // when the permission only contains permission name
+                    if (!is_array($item)) {
                         $this->permissions[$key][] = [
                             'name' => $item,
                             'title' => ucwords(str_replace($this->splitter, ' ', $item)),
                         ];
+
+                        continue;
                     }
 
-                    continue;
+                    // when permission has valid permission structure (ex: slug, name key available)   
+                    $this->permissions[$key][] = $item;
                 }
-
-                // when permission has valid permission structure (ex: slug, name key available)   
-                $this->permissions[$key][] = $permission;
             }
         }
 
