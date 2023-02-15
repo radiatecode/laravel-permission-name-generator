@@ -73,7 +73,7 @@ class RoutePermissionGenerator
                 }
             }
 
-            $tempPluckRoutes = Arr::pluck($tempRoutes, 'slug');
+            $tempPluckRoutes = Arr::pluck($tempRoutes, 'name');
 
             // check is the current route store in temp routes in order to avoid duplicacy
             if (in_array($routeName, $tempPluckRoutes)) {
