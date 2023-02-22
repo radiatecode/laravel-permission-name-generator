@@ -21,4 +21,11 @@ interface WithPermissionGenerator
      * @return array
      */
     public function getExcludeMethods(): array;
+
+    /**
+     * Append permission to another permission
+     *
+     * @return string
+     */
+    public function getAppendTo(): string;
 }

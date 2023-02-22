@@ -80,10 +80,7 @@ class RoutePermissionGenerator
                 continue;
             }
 
-            // permission group title
-            $title = $this->generatePermissionTitle($controllerInstance);
-
-            $key = strtolower(Str::slug($title, "-"));
+            $key = $this->generateKey($controllerInstance);
 
             $permissions[$key][] = [
                 'name' => $routeName, // permission name
@@ -99,6 +96,39 @@ class RoutePermissionGenerator
             'permissions' => $permissions,
             'only_permission_names' => $onlyPermissionNames
         ];
+    }
+
+    protected function generateKey($controllerInstance)
+    {
+        $key = $this->appendPermissionKey($controllerInstance);
+
+        if (empty($key)) {
+            $title = $this->generatePermissionTitle($controllerInstance);
+
+            return strtolower(Str::slug($title, "-"));
+        }
+
+        return $key;
+    }
+
+    protected function appendPermissionKey($currentControllerInstance)
+    {
+        if ($currentControllerInstance instanceof WithPermissionGenerator) {
+            $appendTo = $currentControllerInstance->getAppendTo();
+
+            // generate key
+            if (!empty($appendTo) && class_exists($appendTo)) {
+                $appendControllerClass = app("\\" . $appendTo);
+
+                $title = $this->generatePermissionTitle($appendControllerClass);
+
+                return strtolower(Str::slug($title, "-"));
+            }
+
+            return $appendTo;
+        }
+
+        return '';
     }
 
     protected function generatePermissionTitle($controllerInstance)

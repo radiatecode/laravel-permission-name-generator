@@ -104,9 +104,11 @@ class Permissions
     protected function getCachedPermissions()
     {
         if (!$this->hasCachedPermissions()) {
+            ksort($this->permissions);
+
             return $this->permissions;
         }
-
+        
         return Cache::get(Constant::CACHE_PERMISSIONS);
     }
 
