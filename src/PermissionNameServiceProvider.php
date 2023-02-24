@@ -43,7 +43,8 @@ class PermissionNameServiceProvider extends ServiceProvider
                 __DIR__.'/../resources/views' => resource_path(
                     'views/vendor/permission-generator'
                 ),
-            ]
+            ],
+            'permission-views'
         );
 
         $this->publishes(

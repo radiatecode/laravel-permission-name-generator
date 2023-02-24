@@ -16,7 +16,7 @@ class RoutePermissionGenerator
     public function generate()
     {
         $this->controllerNamespacePrefixes = config(
-            'permission-generator.controller-namespace-prefixes'
+            'permission-generator.permission-generate-controllers'
         );
 
         $this->globalExcludeControllers = config(
@@ -84,7 +84,7 @@ class RoutePermissionGenerator
 
             $permissions[$key][] = [
                 'name' => $routeName, // permission name
-                'title' => ucwords(str_replace($splitter, ' ', $routeName)), // permission title
+                'text' => ucwords(str_replace($splitter, ' ', $routeName)), // permission title
             ];
 
             $onlyPermissionNames[] = $routeName;

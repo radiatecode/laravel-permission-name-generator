@@ -13,53 +13,43 @@ class ResourcePermissionGenerator
 
     public function generate()
     {
-        $tags = config(
-            'permission-generator.resource-permission-tags'
+        $actions = config(
+            'permission-generator.resource-actions'
         );
 
         $resourcePermissions = [];
 
         $onlyPermissionNames = [];
 
-        foreach ($this->resources as $resource) {
+        foreach ($this->resources as $resource => $val) {
 
-            // check is resource has includes key, if so then merge includes tags with global tags
-            if (
-                is_array($resource)
-                && array_key_exists('includes', $resource)
-                && !empty($resource['includes'])
-            ) {
-                $tags = array_merge($tags, $resource['includes']);
+            if (is_string($resource)) {
+                if (is_array($val) && !empty($val)) {
+                    $actions = array_merge($actions, $val);
+                }
+            } else {
+                $resource = $val;
             }
 
-            foreach ($tags as $tag) {
-                // check is the resource has excludes key, if so then exclude the tag form generating permissions
-                if (
-                    is_array($resource)
-                    && array_key_exists('excludes', $resource)
-                    && !empty($resource['excludes'])
-                    && in_array($tag, $resource['excludes'])
-                ) {
-                    continue;
-                }
+            foreach ($actions as $action) {
 
-                $key = $resource . '-permission';
+                $key = $resource . '-permissions';
 
                 // remove this special char from tag, and make it slugable
-                $tagSlug = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_'], '-', $tag);
+                $actionSlug = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_'], '-', $action);
 
                 // remove hyphens 
-                $tagTitle = str_replace('-', ' ', $tagSlug);
+                $actionTitle = str_replace('-', ' ', $actionSlug);
 
                 // generate permission name
-                $permissionName = $tagSlug . '-' . $resource;
-                $permissionTitle = ucwords("{$tagTitle} {$resource}");
+                $permissionName = $actionSlug . '-' . $resource;
+                $permissionTitle = ucwords("{$actionTitle} {$resource}");
 
                 $onlyPermissionNames[] = $permissionName;
 
                 $resourcePermissions[$key][] = [
                     'name' => $permissionName,
-                    'title' => $permissionTitle,
+                    'text' => $permissionTitle,
                 ];
             }
         }

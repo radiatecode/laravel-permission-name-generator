@@ -11,7 +11,7 @@
     </div>
 
     @foreach($permissions as $key => $values)
-    <div class="{{ config('permission-generator.card-size-class') }}">
+    <div class="col-md-3 col-lg-3 col-sm-12">
         <div class="card permission-card">
             <div class="card-header permission-header">
                 <div class="card-title">
@@ -30,7 +30,7 @@
                            @foreach($values as $route)
                                 <li>
                                     <input type="checkbox" name="permissions[]" value="{{ $route['name'] }}" id="{{ $route['name'] }}" {{ in_array($route['name'],$rolePermissions) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="{{ $route['name'] }}">{{ $route['title'] }}</label>
+                                    <label class="form-check-label" for="{{ $route['name'] }}">{{ $route['text'] }}</label>
                                 </li>
                             @endforeach
                         </ul>

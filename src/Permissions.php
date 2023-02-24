@@ -86,7 +86,7 @@ class Permissions
                     if (!is_array($item)) {
                         $this->permissions[$key][] = [
                             'name' => $item,
-                            'title' => ucwords(str_replace($this->splitter, ' ', $item)),
+                            'text' => ucwords(str_replace($this->splitter, ' ', $item)),
                         ];
 
                         continue;
@@ -114,7 +114,7 @@ class Permissions
 
     protected function hasCachedPermissions(): bool
     {
-        return config('permission-generator.cache-permissions.cacheable')
+        return config('permission-generator.cache-permissions')
             && Cache::has(Constant::CACHE_PERMISSIONS);
     }
 

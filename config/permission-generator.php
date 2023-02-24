@@ -11,18 +11,27 @@ return [
      * Custom permissions
      */
     'custom-permissions'            => [
-        //
+        
     ],
 
     /**
-     * Define controller namespace
+     * Permission generate controller's namespace
      *
      * By Default permissions will be generated from all controller's routes
-     * 
-     * [Note: permissions will be generated from those controller which contains the defined whole or prefix of controller namespace]
      */
-    'controller-namespace-prefixes' => [
+    'permission-generate-controllers' => [
         'App\Http\Controllers',
+    ],
+
+    /**
+     * Exclude routes by controller's namespace
+     *
+     * By default all auth controller's routes will be excluded from being generated as permission names
+     * 
+     * [Note: Exclude routes by defining App\Http\Controller\SomeController::class or namespace-prefix]
+     */
+    'exclude-controllers'           => [
+        'App\Http\Controllers\Auth',
     ],
 
     /**
@@ -33,42 +42,24 @@ return [
     ],
 
     /**
-     * Exclude routes by controller whole namespace or sub/prefix of controller namespace
-     *
-     * By default all auth controller's routes will be excluded from being generated as permission names
-     * 
-     * [Note: We can exclude routes by defining controller name or namespace-prefix. All the routes associated with controller will be excluded]
-     */
-    'exclude-controllers'           => [
-        // exclude every route which associate with the prefix of controller namespace 
-        'App\Http\Controllers\Auth',
-    ],
-
-    /**
      * Cache the rendered permission names
      */
-    'cache-permissions'             => [
-        'cacheable'    => true,
-        'cache-driver' => env('CACHE_DRIVER', 'file'),
-    ],
+    'cache-permissions'             => true,
 
     /**
-     * Permission card size
-     *
-     * [NT: Predefined permission cards works on bootstrap]
-     */
-    'card-size-class' => 'col-md-3 col-lg-3 col-sm-12',
-
-    /**
-     * These tage used to generate permissions on given resources
+     * ---------------------------------------------------------------------------------------------------------
+     * This config only used if you want to generate permission names from resources instead of routes
+     * ---------------------------------------------------------------------------------------------------------
      * 
-     * [Ex: create-posts,'edit-posts','view-list-posts' etc]
+     * These actions used to generate permissions on given resources
+     * 
+     * [Ex: If resource is posts, then permission will be (create-posts,'edit-posts','view-posts') etc]
      */
-    'resource-permission-tags' => [
+    'resource-actions' => [
         'create',
         'edit',
         'show',
         'delete',
-        'view-list'
+        'view',
     ],
 ];

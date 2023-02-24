@@ -11,8 +11,10 @@ use Illuminate\Contracts\Foundation\Application;
 use RadiateCode\PermissionNameGenerator\Html\Builder;
 
 /**
- * @method static Builder withRolePermissions(string $roleName, array $rolePermissions, string $permissionsSaveUrl = null)
- * @method static Application|Factory|View view(string $view, array $data = [])
+ * @method static Builder make(string $view, array $data = [])
+ * @method static Builder withPermissions(array $resources)
+ * @method static Builder markRolePermissions(string $roleName, array $rolePermissions, string $permissionsSaveUrl = null)
+ * @method static Application|Factory|View render()
  *
  * @see Builder
  */

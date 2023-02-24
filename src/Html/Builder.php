@@ -16,18 +16,22 @@ class Builder
 
     protected $url = null;
 
-    protected string $source = 'routes';
+    protected array $permissions = [];
 
-    protected array $resources = [];
+    protected string $view;
+
+    protected array $viewData = [];
 
     /**
+     * Mark or tick the stored role's permissions
+     * 
      * @param  string  $roleName
      * @param  array  $rolePermissions
      * @param  string|null  $permissionsSaveUrl // role permissions save url
      *
      * @return $this
      */
-    public function withRolePermissions(
+    public function markRolePermissions(
         string $roleName,
         array $rolePermissions,
         string $permissionsSaveUrl = null
@@ -42,28 +46,14 @@ class Builder
     }
 
     /**
-     * Permissions generate from route names
+     * Permissions
      *
+     * @param array $permissions
      * @return Builder
      */
-    public function fromRoutes()
+    public function withPermissions(array $permissions)
     {
-        $this->source = 'routes';
-
-        return $this;
-    }
-
-    /**
-     * Permissions generate from resources
-     *
-     * @param array $resources
-     * @return Builder
-     */
-    public function fromResources(array $resources)
-    {
-        $this->source = 'resources';
-
-        $this->resources = $resources;
+        $this->permissions = $permissions;
 
         return $this;
     }
@@ -72,22 +62,30 @@ class Builder
      * @param  string  $view
      * @param  array  $data
      *
-     * @return Application|Factory|\Illuminate\Contracts\View\View
+     * @return Builder
      */
-    public function view(string $view, array $data = [])
+    public function make(string $view, array $data = [])
     {
-        return \view($view, $data)
-            ->with('permissionCards', $this->render())
+        $this->view = $view;
+
+        $this->viewData = $data;
+
+        return $this;
+    }
+
+    public function render()
+    {
+        return \view($this->view, $this->viewData)
+            ->with('permissionCards', $this->cards())
             ->with('permissionScripts', $this->scripts());
     }
 
-    protected function render(array $permissions = []): string
+    protected function cards(): string
     {
-
         return View::make(
             'permission-generator::permission',
             [
-                'permissions'     => $this->resolvePermissions(),
+                'permissions'     => $this->permissions,
                 'roleName'        => $this->roleName,
                 'rolePermissions' => $this->rolePermissions,
             ]
@@ -97,14 +95,5 @@ class Builder
     protected function scripts(): string
     {
         return View::make('permission-generator::scripts', ['url' => $this->url])->render();
-    }
-
-    protected function resolvePermissions(): array
-    {
-        if ($this->source == 'routes') {
-            return Permissions::make()->fromRoutes()->get();
-        }
-
-        return Permissions::make()->fromResources($this->resources)->get();
     }
 }
