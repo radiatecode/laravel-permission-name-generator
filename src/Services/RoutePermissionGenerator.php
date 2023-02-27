@@ -73,10 +73,8 @@ class RoutePermissionGenerator
                 }
             }
 
-            $tempPluckRoutes = Arr::pluck($tempRoutes, 'name');
-
-            // check is the current route store in temp routes in order to avoid duplicacy
-            if (in_array($routeName, $tempPluckRoutes)) {
+            // check is the current route store in onlyPermissionNames in order to avoid duplicacy
+            if (in_array($routeName, $onlyPermissionNames)) {
                 continue;
             }
 
@@ -88,10 +86,8 @@ class RoutePermissionGenerator
             ];
 
             $onlyPermissionNames[] = $routeName;
-
-            $tempRoutes = $permissions[$key];
         }
-
+        
         return [
             'permissions' => $permissions,
             'only_permission_names' => $onlyPermissionNames
