@@ -38,9 +38,9 @@ From controller if you want to set prmission group title, excluded permissions o
 
 Available methods in **PermissionGenerator** trait
 
-- `permissionExcludeMethods()` : use to exculde a route from being generated as permission name.
-- `permissionGroupTitle()`: Use to set permission group title
-- `permissionAppendTo()`: Permissions append to another permission group
+- `permissionsExclude(...$methods)` : use to exculde a route from being generated as permission name.
+- `permissionsTitle(string $title)`: Use to set permissions group title
+- `permissionsAppendTo(string $key)`: Permissions append to another permission group
 
 **Example**
 ```php
