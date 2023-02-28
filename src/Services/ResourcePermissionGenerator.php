@@ -54,9 +54,41 @@ class ResourcePermissionGenerator
             }
         }
 
+        ksort($resourcePermissions);
+
         return [
-            'permissions' => $resourcePermissions,
+            'permissions' => $this->sectionPermissions($resourcePermissions),
             'only_permission_names' => $onlyPermissionNames
         ];
+    }
+
+    protected function sectionPermissions($generatedPermissions)
+    {
+        $permissionsSection = config('permission-generator.permissions-section');
+
+        if (empty($permissionsSection)) {
+            return $generatedPermissions;
+        }
+
+        $sectionWisePermissions = [];
+
+        foreach ($permissionsSection as $section => $permissions) {
+            foreach ($permissions as $permissionsTitleKey) {
+                if (array_key_exists($permissionsTitleKey, $generatedPermissions)) {
+                    $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_', '-', ':'], ' ', $section);
+                    $sectionWisePermissions[$section]['permissions'][$permissionsTitleKey] = $generatedPermissions[$permissionsTitleKey];
+
+                    unset($generatedPermissions[$permissionsTitleKey]);
+                }
+            }
+
+            if (!empty($sectionWisePermissions)) {
+                ksort($sectionWisePermissions[$section]['permissions']);
+            }
+        }
+
+        $generatedPermissions = array_merge($sectionWisePermissions, $generatedPermissions);
+
+        return $generatedPermissions;
     }
 }

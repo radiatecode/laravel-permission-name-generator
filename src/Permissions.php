@@ -63,10 +63,6 @@ class Permissions
     public function get(): array
     {
         if (!$this->hasCachedPermissions()) {
-            ksort($this->permissions);
-
-            $this->sectionPermissions(); // if any
-
             return $this->permissions;
         }
 
@@ -104,32 +100,6 @@ class Permissions
                 }
             }
         }
-
-        return $this;
-    }
-
-    protected function sectionPermissions()
-    {
-        $permissionsSection = config('permission-generator.permissions-section');
-
-        if (empty($permissionsSection)) {
-            return $this;
-        }
-
-        $sectionWisePermissions = [];
-
-        foreach ($permissionsSection as $section => $permissions) {
-            foreach ($permissions as $permission) {
-                $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_', '-', ':'], ' ', $section);
-                $sectionWisePermissions[$section]['permissions'][$permission] = $this->permissions[$permission];
-
-                unset($this->permissions[$permission]);
-            }
-
-            ksort($sectionWisePermissions[$section]['permissions']);
-        }
-
-        $this->permissions = array_merge($sectionWisePermissions, $this->permissions);
 
         return $this;
     }

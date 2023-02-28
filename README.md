@@ -228,8 +228,9 @@ From which controller's routes permission names will be generate, define it here
  */
 'permission-generate-controllers' => [
     'App\Http\Controllers',
-    // 'App\Http\Controllers\Api',
 
+    // sample
+    // 'App\Http\Controllers\Api',
     // App\Http\Controllers\DepartmentController::class,
     // App\Http\Controllers\DesignationController::class,
 ],
@@ -243,6 +244,8 @@ Exclude routes by defining controller namespace. Here auth and EmployeeProfileCo
  */
 'exclude-controllers'           => [
     'App\Http\Controllers\Auth', // exclude routes of all auth controllers
+
+    // sample
     App\Http\Controller\Employee\EmployeeProfileController::class, // exclude routes of EmployeeProfileController
 ],
 ```
@@ -254,6 +257,7 @@ Exclude routes by defining controller namespace. Here auth and EmployeeProfileCo
  * Exclude routes by route name
  */
 'exclude-routes'                => [
+    // sample
     'register.user',
     'employee.profile',
     ....
@@ -269,6 +273,42 @@ Caching the permission names
  */
 'cache-permissions'             => true,
 ```
+### 7. Permissions Section
+Permissions can be organised by section, example admin section, employee section, settings setion etc.
+```php
+/**
+ * Parmissions can be organised by section (ex: adminland, settings, employee managment etc)
+ * 
+ * sample format: key as section name, value as generated permissions-title
+ * [
+ *   'adminland' => [
+ *       'employee-permissions',
+ *       'bonus-permissions'
+ *   ],
+ *   'settings' => [
+ *       'office-permissions',
+ *       'designation-permissions',
+ *       'email-settings-permissions',
+ *       'rules-permissions'
+ *   ],
+ *  ]
+ */
+'permissions-section' => [
+    // sample
+    'admin' => [
+        'users-permissions',
+        'roles-permissions'
+    ],
+    'settings' => [
+        'email-settings-permissions',
+        RuleController::class, // if permission is from routes
+        NotificationController::class // if permission is from routes
+    ],
+    ......,
+    ......,
+]
+```
+
 ## Alternatively generate Permissions
 The package allows you to generate permission names by defining resource names.
 

@@ -66,7 +66,7 @@ return [
     /**
      * Parmissions can be organised by section (ex: adminland, settings, employee managment etc)
      * 
-     * format: key as section name, value as generated permissions-title
+     * sample format: key as section name, value as generated permissions-title
      * [
      *   'adminland' => [
      *       'employee-permissions',
@@ -75,8 +75,8 @@ return [
      *   'settings' => [
      *       'office-permissions',
      *       'designation-permissions',
-     *       'email-settings-permissions,
-     *       'rules-permissions
+     *       'email-settings-permissions',
+     *       'rules-permissions'
      *   ],
      *  ]
      */

@@ -84,11 +84,52 @@ class RoutePermissionGenerator
 
             $onlyPermissionNames[] = $routeName;
         }
-        
+
+        ksort($permissions);
+
         return [
-            'permissions' => $permissions,
+            'permissions' => $this->sectionPermissions($permissions),
             'only_permission_names' => $onlyPermissionNames
         ];
+    }
+
+    protected function sectionPermissions($generatedPermissions)
+    {
+        $permissionsSection = config('permission-generator.permissions-section');
+
+        if (empty($permissionsSection)) {
+            return $generatedPermissions;
+        }
+
+        $sectionWisePermissions = [];
+
+        foreach ($permissionsSection as $section => $permissions) {
+            foreach ($permissions as $permissionsTitle) {
+                // check is the permissions title is key or class
+                if (class_exists($permissionsTitle)) {
+                    $permissionsTitleClassInstance = app("\\" . $permissionsTitle);
+
+                    $title = $this->generatePermissionTitle($permissionsTitleClassInstance);
+
+                    $permissionsTitle = strtolower(Str::slug($title, "-"));
+                }
+
+                if (array_key_exists($permissionsTitle, $generatedPermissions)) {
+                    $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_', '-', ':'], ' ', $section);
+                    $sectionWisePermissions[$section]['permissions'][$permissionsTitle] = $generatedPermissions[$permissionsTitle];
+
+                    unset($generatedPermissions[$permissionsTitle]);
+                }
+            }
+
+            if (!empty($sectionWisePermissions)) {
+                ksort($sectionWisePermissions[$section]['permissions']);
+            }
+        }
+
+        $generatedPermissions = array_merge($sectionWisePermissions, $generatedPermissions);
+
+        return $generatedPermissions;
     }
 
     protected function generateKey($controllerInstance)
