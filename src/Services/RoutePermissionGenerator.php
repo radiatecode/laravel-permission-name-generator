@@ -13,6 +13,8 @@ class RoutePermissionGenerator
 
     private $globalExcludeControllers = [];
 
+    private $tail = [];
+
     public function generate()
     {
         $this->controllerNamespacePrefixes = config(
@@ -29,11 +31,11 @@ class RoutePermissionGenerator
 
         $routes = Route::getRoutes();
 
-        $tempRoutes = [];
-
         $onlyPermissionNames = [];
 
         $permissions = [];
+
+        $permissionsTobeInject = [];
 
         foreach ($routes as $route) {
             $routeName = $route->getName();
@@ -73,38 +75,88 @@ class RoutePermissionGenerator
                 }
             }
 
-            // check is the current route store in onlyPermissionNames in order to avoid duplicacy
+            // check is the current route store in temp routes in order to avoid duplicacy
             if (in_array($routeName, $onlyPermissionNames)) {
                 continue;
             }
 
-            $key = $this->generateKey($controllerInstance);
+            // append key generate
+            $appendKey = $this->appendPermissionKey($controllerInstance);
 
-            $permissions[$key][] = [
-                'name' => $routeName, // permission name
-                'text' => ucwords(str_replace($splitter, ' ', $routeName)), // permission title
-            ];
+            $title = $this->generatePermissionTitle($controllerInstance);
 
+            // current controller key generate
+            $currentKey = strtolower(Str::slug($title, "-"));
+
+            // check if append key is not empty
+            if (!empty($appendKey)) {
+                // find the append key in the permission deep level
+                $exist = $this->keyExists($permissions, $appendKey);
+
+                if ($exist) {
+                    // catch the position of the append key
+                    $livingTails = $this->tail();
+
+                    // assign the current permission to that position
+                    $permissionInjectableKey = $livingTails . "." . $currentKey;
+
+                    $this->arr_push($permissions, $permissionInjectableKey, [
+                        'name' => $routeName, // permission name
+                        'text' => ucwords(str_replace($splitter, ' ', $routeName)), // permission title
+                    ]);
+                } else { // if append key is empty
+                    $permission = [
+                        'name' => $routeName, // permission name
+                        'text' => ucwords(str_replace($splitter, ' ', $routeName)), // permission title
+                    ];
+
+                    // then the appendable permission will be waiting list for append key to be generate
+                    $permissionsTobeInject[$appendKey][$currentKey][] = $permission;
+                }
+            } else {
+                $permissions[$currentKey][] = [
+                    'name' => $routeName, // permission name
+                    'text' => ucwords(str_replace($splitter, ' ', $routeName)), // permission title
+                ];
+            }
+            
             $onlyPermissionNames[] = $routeName;
+
+            $this->emptyTheTail();
         }
-        
+
+        $this->permissionToBeAppend($permissionsTobeInject, $permissions);
+
         return [
             'permissions' => $permissions,
             'only_permission_names' => $onlyPermissionNames
         ];
     }
 
-    protected function generateKey($controllerInstance)
+    /**
+     * Append links to existing nav-links
+     *
+     * @param $permissionsTobeInject
+     * @param $permissions
+     */
+    protected function permissionToBeAppend(&$permissionsTobeInject, &$permissions)
     {
-        $key = $this->appendPermissionKey($controllerInstance);
+        foreach ($permissionsTobeInject as $key => $permission) {
+            $exist = $this->keyExists($permissions, $key);
 
-        if (empty($key)) {
-            $title = $this->generatePermissionTitle($controllerInstance);
+            if ($exist) {
+                // get the position of the parent menu
+                $livingTails = $this->tail() . '.' . $key;
 
-            return strtolower(Str::slug($title, "-"));
+                $appendablePermissions = Arr::get($permissions, $livingTails);
+
+                $combinedPermissions = array_merge($appendablePermissions, $permission);
+
+                Arr::set($permissions, $livingTails, $combinedPermissions);
+            }
+
+            unset($permissionsTobeInject[$key]);
         }
-
-        return $key;
     }
 
     protected function appendPermissionKey($currentControllerInstance)
@@ -171,5 +223,88 @@ class RoutePermissionGenerator
         }
 
         return false;
+    }
+
+    /**
+     * @return string
+     */
+    protected function tail(): string
+    {
+        return implode('.', array_reverse($this->tail));
+    }
+
+    protected function emptyTheTail()
+    {
+        $this->tail = [];
+    }
+
+    /**
+     * @param  array  $arr
+     * @param       $keySearch
+     *
+     * @return bool
+     */
+    private function keyExists(array $arr, $keySearch): bool
+    {
+        // is in base array?
+        if (array_key_exists($keySearch, $arr)) {
+            $this->tail[] = $keySearch;
+
+            return true;
+        }
+
+        // check arrays contained in this array
+        foreach ($arr as $key => $element) {
+            if (is_array($element)) {
+                if (array_key_exists($keySearch, $element)) {
+                    $this->tail[] = $key;
+
+                    return true;
+                } else if ($this->keyExists($element, $keySearch)) {
+                    $this->tail[] = $key;
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $array
+     * @param $key
+     * @param $value
+     *
+     * @return array|mixed
+     */
+    private function arr_push(&$array, $key, $value)
+    {
+        if (is_null($key)) {
+            return $array = $value;
+        }
+
+        $keys = explode('.', $key);
+
+        foreach ($keys as $i => $key) {
+            if (count($keys) === 1) {
+                break;
+            }
+
+            unset($keys[$i]);
+
+            // If the key doesn't exist at this depth, we will just create an empty array
+            // to hold the next value, allowing us to create the arrays to hold final
+            // values at the correct depth. Then we'll keep digging into the array.
+            if (!isset($array[$key]) || !is_array($array[$key])) {
+                $array[$key] = [];
+            }
+
+            $array = &$array[$key];
+        }
+
+        $array[array_shift($keys)][] = $value;
+
+        return $array;
     }
 }
