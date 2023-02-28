@@ -295,20 +295,23 @@ Permissions can be organised by section, example admin section, employee section
  */
 'permissions-section' => [
     // sample
-    'admin' => [
+    'adminland' => [
         'users-permissions',
         'roles-permissions'
     ],
     'settings' => [
         'email-settings-permissions',
-        RuleController::class, // if permission is from routes
-        NotificationController::class // if permission is from routes
+        DepartmentController::class, // if permission is from routes
+        DesignationController::class, // if permission is from routes
+        OrganisationController::class // if permission is from routes
     ],
     ......,
     ......,
 ]
 ```
+Samepe Output:
 
+![Stats](img/permissions-section.png)
 ## Alternatively generate Permissions
 The package allows you to generate permission names by defining resource names.
 
