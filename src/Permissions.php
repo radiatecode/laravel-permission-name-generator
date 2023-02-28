@@ -120,7 +120,7 @@ class Permissions
 
         foreach ($permissionsSection as $section => $permissions) {
             foreach ($permissions as $permission) {
-                $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_'], ' ', $section);
+                $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_', '-', ':'], ' ', $section);
                 $sectionWisePermissions[$section]['permissions'][$permission] = $this->permissions[$permission];
 
                 unset($this->permissions[$permission]);
