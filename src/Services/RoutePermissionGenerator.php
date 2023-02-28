@@ -2,7 +2,6 @@
 
 namespace RadiateCode\PermissionNameGenerator\Services;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Route;
 use RadiateCode\PermissionNameGenerator\Contracts\WithPermissionGenerator;
@@ -28,8 +27,6 @@ class RoutePermissionGenerator
         $globalExcludedRoutes = config('permission-generator.exclude-routes');
 
         $routes = Route::getRoutes();
-
-        $tempRoutes = [];
 
         $onlyPermissionNames = [];
 

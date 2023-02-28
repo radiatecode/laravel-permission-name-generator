@@ -64,7 +64,7 @@ return [
     ],
 
     /**
-     * Set parmissions section (ex: adminland, settings, employee managment etc)
+     * Parmissions can be organised by section (ex: adminland, settings, employee managment etc)
      * 
      * format: key as section name, value as generated permissions-title
      * [

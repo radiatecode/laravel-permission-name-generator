@@ -3,7 +3,6 @@
 
 namespace RadiateCode\PermissionNameGenerator;
 
-use Closure;
 use Illuminate\Support\Facades\Cache;
 use RadiateCode\PermissionNameGenerator\Enums\Constant;
 use RadiateCode\PermissionNameGenerator\Services\ResourcePermissionGenerator;
@@ -63,13 +62,21 @@ class Permissions
 
     public function get(): array
     {
-        return $this->getCachedPermissions();
+        if (!$this->hasCachedPermissions()) {
+            ksort($this->permissions);
+
+            $this->sectionPermissions(); // if any
+
+            return $this->permissions;
+        }
+
+        return Cache::get(Constant::CACHE_PERMISSIONS);
     }
 
     public function getOnlyPermissionsNames()
     {
         if (!$this->hasCachedPermissions()) {
-            return $this->onlyPermissionsNames;
+            return sort($this->onlyPermissionsNames);
         }
 
         return Cache::get(Constant::CACHE_ONLY_PERMISSIONS);
@@ -101,15 +108,30 @@ class Permissions
         return $this;
     }
 
-    protected function getCachedPermissions()
+    protected function sectionPermissions()
     {
-        if (!$this->hasCachedPermissions()) {
-            ksort($this->permissions);
+        $permissionsSection = config('permission-generator.permissions-section');
 
-            return $this->permissions;
+        if (empty($permissionsSection)) {
+            return $this;
         }
-        
-        return Cache::get(Constant::CACHE_PERMISSIONS);
+
+        $sectionWisePermissions = [];
+
+        foreach ($permissionsSection as $section => $permissions) {
+            foreach ($permissions as $permission) {
+                $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_'], ' ', $section);
+                $sectionWisePermissions[$section]['permissions'][$permission] = $this->permissions[$permission];
+
+                unset($this->permissions[$permission]);
+            }
+
+            ksort($sectionWisePermissions[$section]['permissions']);
+        }
+
+        $this->permissions = array_merge($sectionWisePermissions, $this->permissions);
+
+        return $this;
     }
 
     protected function hasCachedPermissions(): bool
