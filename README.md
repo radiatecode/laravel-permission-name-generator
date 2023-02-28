@@ -54,8 +54,8 @@ class DepartmentController extends Controller implements WithPermissionGenerator
    
     public function __construct()
     {
-         $this->permissionGroupTitle('Department Crud Permissions')
-            ->permissionExcludeMethods('index');// index associate route won't be generated as permission names
+         $this->permissionsTitle('Department Crud Permissions')
+            ->permissionsExclude('index');// index associate route won't be generated as permission names
     }
 }
 ```
@@ -76,7 +76,7 @@ class DesignationController extends Controller implements WithPermissionGenerato
    
     public function __construct()
     {
-        $this->permissionAppendTo(DepartmentController::class);
+        $this->permissionsAppendTo(DepartmentController::class);
     }
 }
 ```
