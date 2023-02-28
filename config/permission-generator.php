@@ -62,4 +62,25 @@ return [
         'delete',
         'view',
     ],
+
+    /**
+     * Set parmissions section (ex: adminland, settings, employee managment etc)
+     * 
+     * format: key as section name, value as generated permissions-title
+     * [
+     *   'adminland' => [
+     *       'employee-permissions',
+     *       'bonus-permissions'
+     *   ],
+     *   'settings' => [
+     *       'office-permissions',
+     *       'designation-permissions',
+     *       'email-settings-permissions,
+     *       'rules-permissions
+     *   ],
+     *  ]
+     */
+    'permissions-section' => [
+        
+    ]
 ];

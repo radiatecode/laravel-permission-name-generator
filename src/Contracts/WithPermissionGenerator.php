@@ -13,7 +13,7 @@ interface WithPermissionGenerator
      *
      * @return string
      */
-    public function getPermissionTitle(): string;
+    public function getPermissionsTitle(): string;
 
     /**
      * Exclude the routes by controller method

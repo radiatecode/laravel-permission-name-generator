@@ -131,7 +131,7 @@ class RoutePermissionGenerator
     {
         // if the controller use the WithPermissible interface then get the title
         if ($controllerInstance instanceof WithPermissionGenerator) {
-            $title = $controllerInstance->getPermissionTitle();
+            $title = $controllerInstance->getPermissionsTitle();
 
             if (!empty($title)) {
                 return $title;

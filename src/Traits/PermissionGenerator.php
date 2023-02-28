@@ -13,13 +13,14 @@ trait PermissionGenerator
     private $appendTo = '';
 
     /**
-     * Set the permission group title
+     * Set the permissions title
+     * 
      *
      * @param  string  $title
      *
      * @return $this
      */
-    protected function permissionGroupTitle(string $title)
+    protected function permissionsTitle(string $title)
     {
         $this->title = $title;
 
@@ -27,14 +28,13 @@ trait PermissionGenerator
     }
 
     /**
-     * Excluded routes by controller method, 
-     * so that it can not generate as permission name 
+     * Excluded routes by controller method, so that it can not generate as permission name 
      *
      * @param ...$methods
      *
      * @return $this
      */
-    protected function permissionExcludeMethods(...$methods)
+    protected function permissionsExclude(...$methods)
     {
         $this->excludeMethods = $methods;
 
@@ -44,10 +44,10 @@ trait PermissionGenerator
     /**
      * Permission names append to another permission group
      *
-     * @param string $key // SomeController::class | permission-group-key
+     * @param string $key // SomeController::class | permissions-title key
      * @return void
      */
-    protected function permissionAppendTo(string $key)
+    protected function permissionsAppendTo(string $key)
     {
         $this->appendTo = $key;
 
@@ -57,7 +57,7 @@ trait PermissionGenerator
     /**
      * @return string
      */
-    public function getPermissionTitle(): string
+    public function getPermissionsTitle(): string
     {
         return $this->title;
     }
