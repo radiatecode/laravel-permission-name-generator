@@ -3,10 +3,12 @@
 
 namespace RadiateCode\PermissionNameGenerator;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use RadiateCode\PermissionNameGenerator\Enums\Constant;
-use RadiateCode\PermissionNameGenerator\Services\ResourcePermissionGenerator;
+use RadiateCode\PermissionNameGenerator\Services\GeneratePermissionTitle;
 use RadiateCode\PermissionNameGenerator\Services\RoutePermissionGenerator;
+use RadiateCode\PermissionNameGenerator\Services\ResourcePermissionGenerator;
 
 class Permissions
 {
@@ -63,6 +65,10 @@ class Permissions
     public function get(): array
     {
         if (!$this->hasCachedPermissions()) {
+            ksort($this->permissions);
+
+            $this->sectionPermissions();
+
             return $this->permissions;
         }
 
@@ -100,6 +106,45 @@ class Permissions
                 }
             }
         }
+
+        return $this;
+    }
+
+    protected function sectionPermissions()
+    {
+        $permissionsSection = config('permission-generator.permissions-section');
+
+        if (empty($permissionsSection)) {
+            return $this;
+        }
+
+        $sectionWisePermissions = [];
+
+        foreach ($permissionsSection as $section => $permissions) {
+            foreach ($permissions as $permissionsTitle) {
+                // check is the permissions title is key or class
+                if (class_exists($permissionsTitle)) {
+                    $permissionsTitleClassInstance = app("\\" . $permissionsTitle);
+
+                    $title = GeneratePermissionTitle::execute($permissionsTitleClassInstance);
+
+                    $permissionsTitle = strtolower(Str::slug($title, "-"));
+                }
+
+                if (array_key_exists($permissionsTitle, $this->permissions)) {
+                    $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_', '-', ':'], ' ', $section);
+                    $sectionWisePermissions[$section]['permissions'][$permissionsTitle] = $this->permissions[$permissionsTitle];
+
+                    unset($this->permissions[$permissionsTitle]);
+                }
+            }
+
+            if (!empty($sectionWisePermissions)) {
+                ksort($sectionWisePermissions[$section]['permissions']);
+            }
+        }
+
+        $this->permissions = array_merge($sectionWisePermissions, $this->permissions);
 
         return $this;
     }

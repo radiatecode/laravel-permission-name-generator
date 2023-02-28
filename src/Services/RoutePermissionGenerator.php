@@ -85,51 +85,10 @@ class RoutePermissionGenerator
             $onlyPermissionNames[] = $routeName;
         }
 
-        ksort($permissions);
-
         return [
-            'permissions' => $this->sectionPermissions($permissions),
+            'permissions' => $permissions,
             'only_permission_names' => $onlyPermissionNames
         ];
-    }
-
-    protected function sectionPermissions($generatedPermissions)
-    {
-        $permissionsSection = config('permission-generator.permissions-section');
-
-        if (empty($permissionsSection)) {
-            return $generatedPermissions;
-        }
-
-        $sectionWisePermissions = [];
-
-        foreach ($permissionsSection as $section => $permissions) {
-            foreach ($permissions as $permissionsTitle) {
-                // check is the permissions title is key or class
-                if (class_exists($permissionsTitle)) {
-                    $permissionsTitleClassInstance = app("\\" . $permissionsTitle);
-
-                    $title = $this->generatePermissionTitle($permissionsTitleClassInstance);
-
-                    $permissionsTitle = strtolower(Str::slug($title, "-"));
-                }
-
-                if (array_key_exists($permissionsTitle, $generatedPermissions)) {
-                    $sectionWisePermissions[$section]['section'] = str_replace(['\'', '/', '"', ',', ';', '<', '>', '.', '_', '-', ':'], ' ', $section);
-                    $sectionWisePermissions[$section]['permissions'][$permissionsTitle] = $generatedPermissions[$permissionsTitle];
-
-                    unset($generatedPermissions[$permissionsTitle]);
-                }
-            }
-
-            if (!empty($sectionWisePermissions)) {
-                ksort($sectionWisePermissions[$section]['permissions']);
-            }
-        }
-
-        $generatedPermissions = array_merge($sectionWisePermissions, $generatedPermissions);
-
-        return $generatedPermissions;
     }
 
     protected function generateKey($controllerInstance)
@@ -137,7 +96,7 @@ class RoutePermissionGenerator
         $key = $this->appendPermissionKey($controllerInstance);
 
         if (empty($key)) {
-            $title = $this->generatePermissionTitle($controllerInstance);
+            $title = GeneratePermissionTitle::execute($controllerInstance);
 
             return strtolower(Str::slug($title, "-"));
         }
@@ -154,7 +113,7 @@ class RoutePermissionGenerator
             if (!empty($appendTo) && class_exists($appendTo)) {
                 $appendControllerClass = app("\\" . $appendTo);
 
-                $title = $this->generatePermissionTitle($appendControllerClass);
+                $title = GeneratePermissionTitle::execute($appendControllerClass);
 
                 return strtolower(Str::slug($title, "-"));
             }
@@ -163,30 +122,6 @@ class RoutePermissionGenerator
         }
 
         return '';
-    }
-
-    protected function generatePermissionTitle($controllerInstance)
-    {
-        // if the controller use the WithPermissible interface then get the title
-        if ($controllerInstance instanceof WithPermissionGenerator) {
-            $title = $controllerInstance->getPermissionsTitle();
-
-            if (!empty($title)) {
-                return $title;
-            }
-        }
-
-        // Or, generate permission title from controller name
-        $controllerName = class_basename($controllerInstance);
-
-        // place white space between controller (PascalCase) name
-        $name = preg_replace('/([a-z])([A-Z])/s', '$1 $2', $controllerName);
-
-        if (Str::contains($controllerName, 'Controller')) {
-            return str_replace('Controller', 'Permissions', $name);
-        }
-
-        return $name . ' Permissions';
     }
 
     protected function isExcludedController($controller): bool
