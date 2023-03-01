@@ -78,7 +78,9 @@ class Permissions
     public function getOnlyPermissionsNames()
     {
         if (!$this->hasCachedPermissions()) {
-            return sort($this->onlyPermissionsNames);
+            sort($this->onlyPermissionsNames);
+
+            return $this->onlyPermissionsNames;
         }
 
         return Cache::get(Constant::CACHE_ONLY_PERMISSIONS);
