@@ -78,8 +78,6 @@ class Permissions
     public function getOnlyPermissionsNames()
     {
         if (!$this->hasCachedPermissions()) {
-            sort($this->onlyPermissionsNames);
-
             return $this->onlyPermissionsNames;
         }
 
@@ -95,16 +93,36 @@ class Permissions
                 foreach ($permission as $item) {
                     // when the permission only contains permission name
                     if (!is_array($item)) {
+
+                        // skip if permission exist
+                        if (in_array($item, $this->onlyPermissionsNames)) {
+                            continue;
+                        }
+
                         $this->permissions[$key][] = [
                             'name' => $item,
                             'text' => ucwords(str_replace($this->splitter, ' ', $item)),
                         ];
 
+                        $this->onlyPermissionsNames[] = $item;
+
                         continue;
                     }
 
-                    // when permission has valid permission structure (ex: slug, name key available)   
+                    // skip if permission array format is invalid
+                    if (!array_key_exists('name', $item) || !array_key_exists('text', $item)) {
+                        continue;
+                    }
+
+                    // skip if permission exist
+                    if (in_array($item['name'], $this->onlyPermissionsNames)) {
+                        continue;
+                    }
+
+                    // when permission has valid permission structure (ex: text, name key available)   
                     $this->permissions[$key][] = $item;
+
+                    $this->onlyPermissionsNames[] = $item['name'];
                 }
             }
         }
