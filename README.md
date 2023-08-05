@@ -2,7 +2,10 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/radiatecode/laravel-permission-name-generator.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-permission-name-generator)
 [![Total Downloads](https://img.shields.io/packagist/dt/radiatecode/laravel-permission-name-generator.svg?style=flat-square)](https://packagist.org/packages/radiatecode/laravel-permission-name-generator)
 
-This package will generate permission names from route names or resources. In many application we create static permission names (ex: create-post, edit-post, delete-post) to check user's accessability, using the package can helps you to generate permission names dynamically.
+This package will generate permission names from route names or resources. In many application we create static permission names (ex: create-post, edit-post, delete-post) to check user's accessability, using the package can helps you to generate permission names dynamically. Permission names can be generate [panel](#panel) wise.
+
+> **Upgrade Note:** If you are upgrade to v0.4 then you have to upgrade the older  **permission-generator** [config](#configuration) file
+
 # Requirements
 - [PHP >= 7.1](https://www.php.net/)
 - [Laravel 5.7|6.x|7.x|8.x|9.x|10.x](https://github.com/laravel/framework)
