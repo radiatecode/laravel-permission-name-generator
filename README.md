@@ -93,7 +93,7 @@ The package comes with a view builder to show generated permission names in orga
 
 - `make(string $view, array $data = [])`: set your view.
 - `withPermissions(array $permissions)`: pass generated permission names.
-- `markRolePermissions(string $roleName,arra $rolePermissions,string $permissionsSaveUrl = null)`: This method helps you to mark the stored role's permissions, you can define a url where you can store/update the permissions of the role
+- `markRolePermissions(string $roleName,arra $rolePermissions,string $permissionsSaveUrl = null)`: This method helps you to mark the stored role's permissions in view so that you can identify which permissions are belongs to the role, you can define a url where you can store/update the permissions of the role
 - `render()`: it render the view along with predefined data ($permissionCards, $permissionScripts), display these data in your blade. See the blade file example below
 
 ### Submiting permissions can be get by
@@ -179,6 +179,14 @@ class RoleController extends Controller
     }
 }
 ```
+## Panel
+Permissions could be generate for multiple panel, for example one application may have User panel and Admin panel, both may need different permissions. So we can achieve that by defining multiple panel, By default it is 'user' panel, assuming that all the permissions for user panel. But if you want different permissions for different panel you can generate that by defining another panel in the config.
+
+Get the permission names for custom panel.
+
+    RadiateCode\PermissionNameGenerator\Permissions::make()->panel('your_custom_panel_name')->fromRoutes()->get();
+
+> Note: Panel only works for routes
 
 ## Configuration
 
@@ -187,94 +195,107 @@ Config the **config/permission-generator.php** file.
 ### 1. Splitter
 If route name contains any special char then split the name by that char. It will use to generate permission text. For example if route name is **create.post** then permission text would be **Create Post**
 ```php
-/**
- * Split route name by defined needle
- */
 'route-name-splitter-needle'    => '.',
 ```
 ### 2. Custom Permissions
-You can defined custom new permissions, add extra permissions to existing one.
+You can defined custom new permissions, add extra permissions to existing one. You can add custom-permission for custom panel.
 ```php
-/**
- * Custom permissions
- */
 'custom-permissions'  => [
-    //
+    'panels' => [
+        'user' => [
+            // custom-permissions
+        ],
+        // 'admin' => [
+        //    // custom-permission
+        //],
+    ]
 ],
 ```
 > Example 
-> ```php
-> 'custom-permissions' = [
->    'user-permission' => ['active-user','inactive-user'],
->    'bonus-permission' => [
->        [
->          'name' => 'approve-own-department',
->          'text' => 'Approve Own Department'
->        ],
->    ]
-> ]
->
->```
-> Note: notice the `user-permission` key which contains only permission name, if no text key pass the package dynamically make a text for the permission name. You can also add extra permissions to exisiting permission, for example `bonus-permission` is an exisitng permission, we add custom `approve-own-department` extra permission to it.
+```php
+'custom-permissions' = [
+    'panels' => [
+        'user' => [
+            'user-permission' => ['active-user','inactive-user'],
+            'bonus-permission' => [
+                [
+                    'name' => 'approve-own-department',
+                    'text' => 'Approve Own Department'
+                ],
+            ]
+        ],
+        // 'admin' => [
+        //    // custom-permission
+        //],
+    ]
+]
+```
+> Note: notice the `user-permission` key which contains only permission name, if no **text** key pass the package dynamically make a **text** for the permission name. You can also add extra permissions to exisiting permission, for example `bonus-permission` is an exisitng permission, we add custom `approve-own-department` extra permission to it.
 >
 ### 3. Permission Generate Controllers
-From which controller's routes permission names will be generate, define it here. This config play vital role to generate permissions because permissions will be generated only for defined controllers. 
+This config play vital role to generate permissions because permissions will be generated only for defined controllers. Permission names will be generate, from only defined controller's route names. By Default permission names will be generated from all controller's routes for user panel. You can define custom panel and it's permission generate controllers. 
+**Controller could be fully qualified class name or namespace-prefix.**
 
 ```php
-/**
- * Permission generate controller's namespace
- *
- * By Default permission names will be generated from all controller's routes
- */
 'permission-generate-controllers' => [
-    'App\Http\Controllers',
+    'panels' => [
+        'user' => [
+            'App\Http\Controllers',
 
-    // sample
-    // 'App\Http\Controllers\Api',
-    // App\Http\Controllers\DepartmentController::class,
-    // App\Http\Controllers\DesignationController::class,
+            // sample
+            // 'App\Http\Controllers\Api',
+            // App\Http\Controllers\DepartmentController::class,
+            // App\Http\Controllers\DesignationController::class,
+        ],
+        // 'admin' => [
+        //    'App\Http\Controllers\Admin',
+        //],
+    ]
 ],
 ```
 ### 4. Exclude Routes
-Exclude routes by defining controller namespace. Here auth and EmployeeProfileController related routes will be excluded from being generated as permission names.
-
+Exclude routes by controller. By default all auth controller's routes will be excluded from being generated as permission names for user panel.
+**Controller could be fully qualified class name or namespace-prefix.**
 ```php
- /**
- * Exclude routes by controller's namespace
- */
 'exclude-controllers'           => [
-    'App\Http\Controllers\Auth', // exclude routes of all auth controllers
-
-    // sample
-    App\Http\Controller\Employee\EmployeeProfileController::class, // exclude routes of EmployeeProfileController
+    'panels' => [
+        'user' => [
+            'App\Http\Controllers\Auth', // exclude routes of all auth controllers
+            // App\Http\Controller\Employee\EmployeeProfileController::class, 
+        ],
+        // 'admin' => [
+        //    'App\Http\Controllers\Admin\Auth',
+        //],
+    ]
 ],
 ```
 
 **Or,** we can exclude routes by route name
 
 ```php
- /**
- * Exclude routes by route name
- */
-'exclude-routes'                => [
-    // sample
-    'register.user',
-    'employee.profile',
-    ....
-    ....
+'exclude-routes'  => [
+    'panels' => [
+        'user' => [
+            // sample
+            'register.user',
+            'employee.profile',
+            ....
+            ....
+        ],
+        // 'admin' => [
+        //   route.name,
+        //],
+    ]
 ],
 ```
 ### 6. Cache Permissions
 Caching the permission names
 
 ```php
-/**
- * Cache the rendered permission names
- */
-'cache-permissions'             => true,
+'cache-permissions' => true,
 ```
 ### 7. Permissions Section
-Permissions can be organised by section, example admin section, employee section, settings setion etc.
+Permissions can be grouped by section, example admin section, employee section, settings setion etc.
 ```php
 /**
  * Parmissions can be organised by section (ex: adminland, settings, employee managment etc)
@@ -294,19 +315,26 @@ Permissions can be organised by section, example admin section, employee section
  *  ]
  */
 'permissions-section' => [
-    // sample
-    'adminland' => [
-        'users-permissions',
-        'roles-permissions'
-    ],
-    'settings' => [
-        'email-settings-permissions',
-        DepartmentController::class, // if permission is from routes
-        DesignationController::class, // if permission is from routes
-        OrganisationController::class // if permission is from routes
-    ],
-    ......,
-    ......,
+    'panels' => [
+        'user' => [
+            // sample
+            'adminland' => [
+                'users-permissions', // all the user permissions
+                'roles-permissions' // all the role permissions
+            ],
+            'settings' => [
+                'email-settings-permissions', // all the permissions of  email settings
+                DepartmentController::class, // all the permissions of department
+                DesignationController::class, // all the permissions of designation
+                OrganisationController::class // all the permissions of organisation
+            ],
+            ......,
+            ......, 
+        ],
+        // 'admin' => [
+        // 
+        //],
+    ]
 ]
 ```
 Samepe Output:

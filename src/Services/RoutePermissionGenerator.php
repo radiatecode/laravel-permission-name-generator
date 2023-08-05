@@ -8,23 +8,32 @@ use RadiateCode\PermissionNameGenerator\Contracts\WithPermissionGenerator;
 
 class RoutePermissionGenerator
 {
-    private $controllerNamespacePrefixes = [];
+    private $permissionGenerateControllers = [];
 
     private $globalExcludeControllers = [];
 
+    private string $panel;
+
+    public function __construct(string $panel = 'user')
+    {
+        $this->panel = $panel;
+    }
+
     public function generate()
     {
-        $this->controllerNamespacePrefixes = config(
-            'permission-generator.permission-generate-controllers'
+        $this->permissionGenerateControllers = config(
+            "permission-generator.permission-generate-controllers.panels.{$this->panel}",
+            []
         );
 
         $this->globalExcludeControllers = config(
-            'permission-generator.exclude-controllers'
+            "permission-generator.exclude-controllers.panels.{$this->panel}",
+            []
         );
 
         $splitter = config('permission-generator.route-name-splitter-needle');
 
-        $globalExcludedRoutes = config('permission-generator.exclude-routes');
+        $globalExcludedRoutes = config("permission-generator.exclude-routes.panels.{$this->panel}", []);
 
         $routes = Route::getRoutes();
 
@@ -137,7 +146,7 @@ class RoutePermissionGenerator
 
     protected function isControllerValid($controller): bool
     {
-        foreach ($this->controllerNamespacePrefixes as $prefix) {
+        foreach ($this->permissionGenerateControllers as $prefix) {
             if (Str::contains($controller, $prefix)) {
                 return true;
             }

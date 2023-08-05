@@ -18,6 +18,8 @@ class Permissions
 
     protected $splitter;
 
+    protected string $panel = 'user';
+
     public function __construct()
     {
         $this->splitter = config('permission-generator.route-name-splitter-needle');
@@ -26,6 +28,13 @@ class Permissions
     public static function make(): Permissions
     {
         return new self();
+    }
+
+    public function panel(string $panel)
+    {
+        $this->panel = $panel;
+
+        return $this;
     }
 
     public function fromResources(array $resources)
@@ -40,7 +49,6 @@ class Permissions
         $this->onlyPermissionsNames = $resourceGenerator['only_permission_names'];
 
         $this->customPermissions();
-        $this->cachePermissions();
 
         return $this;
     }
@@ -51,13 +59,12 @@ class Permissions
             return $this;
         }
 
-        $routePermissionGenerator = (new RoutePermissionGenerator())->generate();
+        $routePermissionGenerator = (new RoutePermissionGenerator($this->panel))->generate();
 
         $this->permissions = $routePermissionGenerator['permissions'];
         $this->onlyPermissionsNames = $routePermissionGenerator['only_permission_names'];
 
         $this->customPermissions();
-        $this->cachePermissions();
 
         return $this;
     }
@@ -69,10 +76,12 @@ class Permissions
 
             $this->sectionPermissions();
 
+            $this->cachePermissions();
+
             return $this->permissions;
         }
 
-        return Cache::get(Constant::CACHE_PERMISSIONS);
+        return Cache::get($this->permissionCacheKey());
     }
 
     public function getOnlyPermissionsNames()
@@ -81,12 +90,12 @@ class Permissions
             return $this->onlyPermissionsNames;
         }
 
-        return Cache::get(Constant::CACHE_ONLY_PERMISSIONS);
+        return Cache::get($this->permissionNameCacheKey());
     }
 
     protected function customPermissions(): Permissions
     {
-        $customPermissions = config('permission-generator.custom-permissions');
+        $customPermissions = config("permission-generator.custom-permissions.panels.{$this->panel}", []);
 
         if (is_array($customPermissions) && !empty($customPermissions)) {
             foreach ($customPermissions as $key => $permission) {
@@ -132,7 +141,7 @@ class Permissions
 
     protected function sectionPermissions()
     {
-        $permissionsSection = config('permission-generator.permissions-section');
+        $permissionsSection = config("permission-generator.permissions-section.panels.{$this->panel}", []);
 
         if (empty($permissionsSection)) {
             return $this;
@@ -172,23 +181,33 @@ class Permissions
     protected function hasCachedPermissions(): bool
     {
         return config('permission-generator.cache-permissions')
-            && Cache::has(Constant::CACHE_PERMISSIONS);
+            && Cache::has($this->permissionCacheKey());
     }
 
     protected function cachePermissions()
     {
         if (!$this->hasCachedPermissions() && !empty($this->permissions)) {
             Cache::put(
-                Constant::CACHE_PERMISSIONS,
+                $this->permissionCacheKey(),
                 $this->permissions,
                 now()->addDay()
             );
 
             Cache::put(
-                Constant::CACHE_ONLY_PERMISSIONS,
+                $this->permissionNameCacheKey(),
                 $this->onlyPermissionsNames,
                 now()->addDay()
             );
         }
+    }
+
+    protected function permissionCacheKey()
+    {
+        return  Constant::CACHE_PERMISSIONS . ":" . $this->panel;
+    }
+
+    protected function permissionNameCacheKey()
+    {
+        return  Constant::CACHE_ONLY_PERMISSIONS . ":" . $this->panel;
     }
 }
