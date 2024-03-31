@@ -14,9 +14,24 @@ class RoutePermissionGenerator
 
     private string $panel;
 
+    protected array $excludePermissions = [];
+
     public function __construct(string $panel = 'user')
     {
         $this->panel = $panel;
+    }
+
+    /**
+     * Exclude specific permissions from the permission list.
+     *
+     * @param array $permissions exclude permissions on demand.
+     * @return $this
+     */
+    public function exclude(array $permissions)
+    {
+        $this->excludePermissions = $permissions;
+
+        return $this;
     }
 
     public function generate()
@@ -35,6 +50,8 @@ class RoutePermissionGenerator
 
         $globalExcludedRoutes = config("permission-generator.exclude-routes.panels.{$this->panel}", []);
 
+        $excludedRoutes = array_merge($globalExcludedRoutes, $this->excludePermissions);
+
         $routes = Route::getRoutes();
 
         $onlyPermissionNames = [];
@@ -45,7 +62,7 @@ class RoutePermissionGenerator
             $routeName = $route->getName();
 
             // exclude routes which defined in the config
-            if (in_array($routeName, $globalExcludedRoutes)) {
+            if (in_array($routeName, $excludedRoutes)) {
                 continue;
             }
 

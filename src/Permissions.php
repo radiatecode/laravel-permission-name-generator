@@ -20,6 +20,8 @@ class Permissions
 
     protected string $panel = 'user';
 
+    protected array $excludePermissions = [];
+
     public function __construct()
     {
         $this->splitter = config('permission-generator.route-name-splitter-needle');
@@ -33,6 +35,13 @@ class Permissions
     public function panel(string $panel)
     {
         $this->panel = $panel;
+
+        return $this;
+    }
+
+    public function exclude(array $permissions)
+    {
+        $this->excludePermissions = $permissions;
 
         return $this;
     }
@@ -59,7 +68,7 @@ class Permissions
             return $this;
         }
 
-        $routePermissionGenerator = (new RoutePermissionGenerator($this->panel))->generate();
+        $routePermissionGenerator = (new RoutePermissionGenerator($this->panel))->exclude($this->excludePermissions)->generate();
 
         $this->permissions = $routePermissionGenerator['permissions'];
         $this->onlyPermissionsNames = $routePermissionGenerator['only_permission_names'];
