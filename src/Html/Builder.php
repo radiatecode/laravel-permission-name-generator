@@ -73,27 +73,33 @@ class Builder
         return $this;
     }
 
-    public function render()
+    public function render(array $permissionViewData = [], array $permissionScriptData = [])
     {
         return \view($this->view, $this->viewData)
-            ->with('permissionCards', $this->cards())
-            ->with('permissionScripts', $this->scripts());
+            ->with('permissionCards', $this->cards($permissionViewData))
+            ->with('permissionScripts', $this->scripts($permissionScriptData));
     }
 
-    protected function cards(): string
+    protected function cards(array $permissionViewData = []): string
     {
+        $data = array_merge([
+            'permissions'     => $this->permissions,
+            'roleName'        => $this->roleName,
+            'rolePermissions' => $this->rolePermissions,
+        ], $permissionViewData);
+
         return View::make(
             'permission-generator::permission',
-            [
-                'permissions'     => $this->permissions,
-                'roleName'        => $this->roleName,
-                'rolePermissions' => $this->rolePermissions,
-            ]
+            $data
         )->render();
     }
 
-    protected function scripts(): string
+    protected function scripts(array $permissionScriptData = []): string
     {
-        return View::make('permission-generator::scripts', ['url' => $this->url])->render();
+        $data = array_merge([
+            'url' => $this->url,
+        ], $permissionScriptData);
+
+        return View::make('permission-generator::scripts', $data)->render();
     }
 }
