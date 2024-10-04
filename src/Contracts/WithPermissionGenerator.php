@@ -28,4 +28,12 @@ interface WithPermissionGenerator
      * @return string
      */
     public function getAppendTo(): string;
+
+    /**
+     * All permissions ignored if true
+     *
+     * @return bool
+     */
+    public function isPermissionsIgnored(): bool;
+
 }

@@ -177,7 +177,7 @@ class Permissions
                 }
             }
 
-            if (!empty($sectionWisePermissions)) {
+            if (!empty($sectionWisePermissions) && array_key_exists($section, $sectionWisePermissions)) {
                 ksort($sectionWisePermissions[$section]['permissions']);
             }
         }

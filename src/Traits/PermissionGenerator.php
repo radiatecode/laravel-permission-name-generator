@@ -8,6 +8,8 @@ trait PermissionGenerator
 {
     private $title = '';
 
+    private $ignore = false;
+
     private $excludeMethods = [];
 
     private $appendTo = '';
@@ -55,6 +57,19 @@ trait PermissionGenerator
     }
 
     /**
+     * Permission ignored when value true
+     *
+     * @param boolean $ignore
+     * @return void
+     */
+    protected function permissionsIgnoreWhen(bool $ignore)
+    {
+        $this->ignore = $ignore;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getPermissionsTitle(): string
@@ -76,5 +91,10 @@ trait PermissionGenerator
     public function getAppendTo(): string
     {
         return $this->appendTo;
+    }
+
+    public function isPermissionsIgnored(): bool
+    {
+        return $this->ignore;
     }
 }

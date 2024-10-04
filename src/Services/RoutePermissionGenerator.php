@@ -87,6 +87,10 @@ class RoutePermissionGenerator
 
             // if the controller use the WithPermissible interface then find the excluded routes
             if ($controllerInstance instanceof WithPermissionGenerator) {
+                if ($controllerInstance->isPermissionsIgnored()) {
+                    continue;
+                }
+                
                 $controllerMethod = $actionExtract[1];
 
                 $excludeMethods = $controllerInstance->getExcludeMethods();
@@ -96,7 +100,7 @@ class RoutePermissionGenerator
                 }
             }
 
-            // check is the current route store in onlyPermissionNames in order to avoid duplicacy
+            // check is the current route store in onlyPermissionNames in order to avoid duplicity
             if (in_array($routeName, $onlyPermissionNames)) {
                 continue;
             }
